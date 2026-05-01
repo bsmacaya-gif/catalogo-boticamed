@@ -1247,11 +1247,26 @@ function parseCSVLine(line) {
 
 // NUEVO: Fetch optimizado (puente JSON)
 async function fetchFromSheets() {
+    console.log("--- INICIO DE CARGA ---");
+    console.log("Endpoint configurado:", LEADS_ENDPOINT);
+    
+    if (!LEADS_ENDPOINT) {
+        console.error("ERROR: LEADS_ENDPOINT está vacío");
+        return;
+    }
+
     try {
         const res = await fetch(LEADS_ENDPOINT);
-        const data = await res.json();
+        console.log("Estado de la respuesta:", res.status);
         
-        // Mapeo directo desde el formato JSON (Apps Script)
+        const data = await res.json();
+        console.log("Datos recibidos:", data);
+        
+        if (!data || data.length === 0) {
+            console.warn("Datos vacíos recibidos");
+            return;
+        }
+
         const products = data.slice(1).map(row => ({
             sku: row[0] || '',
             nombre: row[1] || '',
@@ -1266,10 +1281,13 @@ async function fetchFromSheets() {
             precioOferta: Number(String(row[10]).replace(/[^0-9]/g, '')) || 0,
             fichaUrl: row[11] || ''
         }));
+        
+        console.log("Productos mapeados correctamente:", products);
         loadProducts(products);
+        console.log("--- CARGA EXITOSA ---");
+
     } catch (err) {
-        console.error("Error al cargar:", err);
-        loadProducts(DEMO_PRODUCTS); 
+        console.error("ERROR DETECTADO EN FETCH:", err);
     }
 }
 
