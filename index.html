@@ -1247,26 +1247,26 @@ function parseCSVLine(line) {
 
 // NUEVO: Fetch optimizado (puente JSON)
 async function fetchFromSheets() {
-    console.log("--- INICIO DE CARGA ---");
-    console.log("Endpoint configurado:", LEADS_ENDPOINT);
+    console.log("--- INICIANDO CARGA DE DATOS ---");
+    const URL = 'https://script.google.com/macros/s/AKfycbytarPBz2u3kLkSjP99w73f4eFlVALJxNSGjSauzKg1dqWaBTQSRHE6Oa_pRIQOBnlY/exec';
     
-    if (!LEADS_ENDPOINT) {
-        console.error("ERROR: LEADS_ENDPOINT está vacío");
-        return;
-    }
-
     try {
-        const res = await fetch(LEADS_ENDPOINT);
-        console.log("Estado de la respuesta:", res.status);
+        const response = await fetch(URL);
+        console.log("Respuesta obtenida. Código:", response.status);
         
-        const data = await res.json();
-        console.log("Datos recibidos:", data);
-        
+        if (!response.ok) {
+            throw new Error('Error al conectar con el servidor de datos: ' + response.status);
+        }
+
+        const data = await response.json();
+        console.log("Datos recibidos (JSON):", data);
+
         if (!data || data.length === 0) {
-            console.warn("Datos vacíos recibidos");
+            console.error("El servidor respondió, pero los datos están vacíos.");
             return;
         }
 
+        // Mapeo de productos
         const products = data.slice(1).map(row => ({
             sku: row[0] || '',
             nombre: row[1] || '',
@@ -1282,15 +1282,16 @@ async function fetchFromSheets() {
             fichaUrl: row[11] || ''
         }));
         
-        console.log("Productos mapeados correctamente:", products);
+        console.log("Productos procesados con éxito:", products.length);
         loadProducts(products);
-        console.log("--- CARGA EXITOSA ---");
 
     } catch (err) {
-        console.error("ERROR DETECTADO EN FETCH:", err);
+        console.error("¡ERROR CRÍTICO! Detalle del error:", err);
+        // Si falla todo, carga los datos demo
+        console.log("Cargando productos de prueba (DEMO_PRODUCTS)...");
+        loadProducts(DEMO_PRODUCTS);
     }
 }
-
 
 /* ═══════════════════════════════════════════
    SKELETON
