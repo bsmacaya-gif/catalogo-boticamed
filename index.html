@@ -1218,124 +1218,60 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
    ══════════════════════════════════════════════════════════ */
 
 // ── PEGA AQUÍ TU URL CSV DE GOOGLE SHEETS ──
-const SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQY-OCVtrCTJvNtEt6wBbmuy-tM-cfyKOH9UlzpqkbLcPAsqASvTZnyRhBoqpthtWLBlaoU3X9rHaBK/pub?gid=0&single=true&output=csv';
+/* ══════════════════════════════════════════════════════════
+   ⚙️ CONFIGURACIÓN Y LÓGICA CORREGIDA
+   ══════════════════════════════════════════════════════════ */
 
-// ── Pestaña Leads (URL CSV de la pestaña Leads publicada) ──
-const LEADS_CSV_URL   = '';
+const LEADS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbytarPBz2u3kLkSjP99w73f4eFlVALJxNSGjSauzKg1dqWaBTQSRHE6Oa_pRIQOBnlY/exec';
 
-/*
-  COLUMNAS DE TU GOOGLE SHEETS (en este orden exacto):
-  A = SKU
-  B = Nombre
-  C = Variable      ← Tallas separadas por | (ej: S|M|L|XL). Dejar vacío si no aplica.
-  D = Categoría
-  E = Sub Categoría
-  F = Precio        (solo número, sin puntos ni $)
-  G = Descripción   (specs separadas por |)
-  H = URL Imagen
-  I = Emoji
-  J = Novedad       (TRUE o FALSE)
-  K = Precio Oferta (vacío si no tiene oferta)
-  L = URL Ficha Técnica PDF (opcional)
-*/
-
-const WA_NUMBER       = '56979707156';             // ← WhatsApp Boticamed (sin + ni espacios)
-const MIN_ORDER       = 200000;                    // ← Pedido mínimo CLP (neto)
-
-// ── DESCUENTO ESCALONADO POR VOLUMEN ─────────────────────────────────────
-// Tramo 1: 5% cuando el neto supere $526.316
-// Tramo 2: 7% cuando el neto supere $752.688
-// Tramo 3: 10% cuando el neto supere $1.111.112
-const DISCOUNT_TIERS = [
-  { threshold: 526316,  pct: 0.05, label: '5%'  },
-  { threshold: 752688,  pct: 0.07, label: '7%'  },
-  { threshold: 1111112, pct: 0.10, label: '10%' },
-];
-// Mantener compatibilidad con código que use DISCOUNT_THRESHOLD/PCT
-const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[2].threshold; // umbral máximo (10%)
-const DISCOUNT_PCT       = DISCOUNT_TIERS[2].pct;
-const LEADS_ENDPOINT  = '';                        // ← URL del Web App de Google Apps Script
-const LOGO_URL        = 'https://boticamed.b-cdn.net/wp-content/uploads/2024/07/boticamed-logo.png.webp';
-const ADMIN_PASSWORD  = '13287Boticamed%';           // ← Clave del panel de administración (cámbiala)
-
-// ── EMAILJS — Configuración envío automático de correo ──────────────────────
-// PASO 1: Crear cuenta gratis en https://www.emailjs.com
-// PASO 2: Conectar tu Gmail en Email Services → Add New Service → Gmail
-// PASO 3: Crear plantilla en Email Templates → Create New Template
-//         En "To Email" pon: bsilva@boticamed.cl
-//         En el body usa las variables: {{quote}}, {{empresa}}, {{rut}}, {{detalle}}, {{total}}
-// PASO 4: Copia los 3 valores y pégalos abajo
-const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';    // ← Account → API Keys → Public Key
-const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';    // ← Email Services → tu servicio → Service ID
-const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';   // ← Email Templates → tu plantilla → Template ID
-
-// ── CONDICIONES COMERCIALES — Se incluyen en el mensaje de WhatsApp ──
-const CONDITIONS = {
-  entrega:  '5–7 días hábiles desde confirmación',
-  pago:     'Transferencia bancaria / Cheque 30 días',
-  vigencia: '30 días corridos desde la fecha del pedido',
-};
-
-/* ═══════════════════════════════════════════════════
-   DATOS DEMO
-   ═══════════════════════════════════════════════════ */
-const DEMO_PRODUCTS = [
-  { sku:'BM904ABJ-46', nombre:'Silla de Ruedas Geriátrica',                categoria:'Sillas de Ruedas', precio:79990,  precioOferta:0,     descripcion:'Estructura acero con pintura en polvo negra|Apoyabrazos PU y asiento PVC desmontables|Apoyapiés desmontables con plataforma plástica|Frenos sistema unido para acompañante', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
-  { sku:'BM909AB-46',  nombre:'Silla de Ruedas MAG + Apoyabrazos Abatible',categoria:'Sillas de Ruedas', precio:99990,  precioOferta:84990, descripcion:'Acero esmaltado negro · respaldo plegable|Apoyabrazos abatibles/desmontables · tapiz nylon|Ruedas traseras 24" · delanteras 8" macizas|Asiento 46 cm · Cap. 125 kg · Peso 17,5 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
-  { sku:'BM951B-56',   nombre:'Silla de Ruedas Bariátrica 130 kg · 56 cm', categoria:'Sillas de Ruedas', precio:149990, precioOferta:0,     descripcion:'Acero reforzado negro (powder coating)|Asiento nylon 56 cm · apoyabrazos abatibles|Ruedas macizas PU · ruedas antivuelco|Ancho total 76 cm · Cap. 130 kg · Peso 19,8 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
-  { sku:'BM956Q-60',   nombre:'Silla de Ruedas Bariátrica 225 kg · 60 cm', categoria:'Sillas de Ruedas', precio:299990, precioOferta:0,     descripcion:'Acero A3 gran tensión antioxidante · plegable|Asiento Oxford ultra resistente · brazos abatibles|Traseras 24" desmontaje rápido · delanteras 8"|Asiento 60 cm · Cap. 225 kg · Peso 21,7 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
-  { sku:'BM123',       nombre:'Silla de Ruedas Eléctrica Estándar',         categoria:'Sillas de Ruedas', precio:324990, precioOferta:289990,descripcion:'2 motores 250W · batería ácido-plomo 12/20Ah|Velocidad máx. 6 km/h · autonomía 15 km|Ruedas traseras 16" neumáticas · delanteras 10" PU|Asiento 46 cm · Cap. 120 kg · estructura plegable', img:'', emoji:'⚡', novedad:true, fichaUrl:'' },
-  { sku:'BM881',       nombre:'Alza Baño con Manillas',                      categoria:'Baño & Higiene',   precio:19990,  precioOferta:0,     descripcion:'Plástico ABS alta densidad · seguro de fijación|Apoyabrazos ergonómicos 33 cm · asiento 12 cm|43,7 × 52,8 cm · Peso 3 kg · Cap. 100 kg', img:'', emoji:'🚽', novedad:false, fichaUrl:'' },
-  { sku:'BM894',       nombre:'Baño Portátil Plegable',                      categoria:'Baño & Higiene',   precio:29990,  precioOferta:0,     descripcion:'Acero 20 mm · plegable · altura regulable 5 niveles|Balde con tapa · asiento PVC · apoyabrazos texturizados|Ancho 46 cm · Cap. 100 kg · Peso 7 kg', img:'', emoji:'🪑', novedad:false, fichaUrl:'' },
-  { sku:'BM810-BQ',    nombre:'Baño Portátil 136 kg',                        categoria:'Baño & Higiene',   precio:30990,  precioOferta:0,     descripcion:'Acero inoxidable esmaltado · plegable|Asiento 46 cm · profundidad 50 cm · altura 60–75 cm|Capacidad 136 kg · diseño reforzado', img:'', emoji:'🪑', novedad:false, fichaUrl:'' },
-  { sku:'BM798LQ-A',   nombre:'Silla de Ducha con Respaldo y Apoyabrazos',   categoria:'Baño & Higiene',   precio:24990,  precioOferta:0,     descripcion:'Altura asiento 35–46 cm · total hasta 80 cm|Asiento PVC 53 cm · patas antideslizantes|Profundidad 34 cm · Cap. 100 kg', img:'', emoji:'🚿', novedad:false, fichaUrl:'' },
-  { sku:'BM7100L',     nombre:'Tabla para Tina',                             categoria:'Baño & Higiene',   precio:21990,  precioOferta:0,     descripcion:'Polipropileno impermeable hipoalergénico con drenaje|Asa integrada · 4 tornillos antideslizantes|Compatible tinas 40–62 cm · Cap. 100 kg · 2,49 kg', img:'', emoji:'🛁', novedad:false, fichaUrl:'' },
-  { sku:'BM667B',      nombre:'Lavapelo Rígido',                             categoria:'Baño & Higiene',   precio:9990,   precioOferta:0,     descripcion:'Plástico durable · resistente a agua caliente y químicos|Soporte ergonómico para cuello · manguera de drenaje|Ideal para pacientes postrados · uso en cama', img:'', emoji:'💆', novedad:false, fichaUrl:'' },
-  { sku:'BM2100',      nombre:'Lavapelo Inflable',                           categoria:'Baño & Higiene',   precio:14990,  precioOferta:0,     descripcion:'PVC alta resistencia 0,4 mm|Incluye bolso, manguera, clips y bomba manual|23 × 62 × 53 cm · kit completo portátil', img:'', emoji:'💆', novedad:false, fichaUrl:'' },
-  { sku:'BM913L',      nombre:'Andador Articulado y Plegable',               categoria:'Movilidad',        precio:18990,  precioOferta:0,     descripcion:'Aluminio alta resistencia · color cromo brillante|Altura regulable 76–94 cm|Dimensiones: 51 cm largo × 57 cm ancho', img:'', emoji:'🚶', novedad:false, fichaUrl:'' },
-  { sku:'BM2691',      nombre:'Colchón Antiescaras Burbuja Clase I (Low Risk)',    categoria:'Cama & Descanso', precio:23990, precioOferta:0, descripcion:'110V/220V · flujo 5–7 L/min · ciclo 12 min|PVC K80 0,3 mm · 130 burbujas con solapas|200 × 90 × 7 cm · Cap. 135 kg', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
-  { sku:'BM2692',      nombre:'Colchón Antiescaras Tubular Clase II (Middle Risk)',categoria:'Cama & Descanso', precio:64990, precioOferta:0, descripcion:'Flujo 6–8 L/min · 7W · fusible 1A incluido|17–18 celdas Nylon PVC médico · altura 11,5 cm|Válvula CPR · kit reparación · 200 × 90 cm · Cap. 145 kg', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
-  { sku:'BM2693',      nombre:'Colchón Antiescaras Tubular Clase III (High Risk)', categoria:'Cama & Descanso', precio:164990,precioOferta:0, descripcion:'Bomba aluminio · sistema alternante AB/ABC|18/24 celdas Nylon PVC/TPU · altura 12,7 cm|Válvula CPR · filtro de aire · conectores CPC', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
-  { sku:'BM782-30',    nombre:'Barra de Seguridad 30 cm',                   categoria:'Seguridad',        precio:4990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 30 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
-  { sku:'BM782-40',    nombre:'Barra de Seguridad 40 cm',                   categoria:'Seguridad',        precio:5990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 40 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
-  { sku:'BM782-60',    nombre:'Barra de Seguridad 60 cm',                   categoria:'Seguridad',        precio:6990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 60 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
-];
-
-const CATEGORY_ICONS = { 'Sillas de Ruedas':'♿', 'Baño & Higiene':'🚿', 'Movilidad':'🚶', 'Cama & Descanso':'🛏️', 'Seguridad':'🛡️' };
-
-/* ═══════════════════════════════════════════
-   STATE
-   ═══════════════════════════════════════════ */
-let allProducts = [];
-let cart = {};
-let currentSearch = '';
-let orderData = {};
-let quoteNumber = '';
-let adminData = [];
-let adminStatuses = {};
-
-/* ═══════════════════════════════════════════
-   INIT
-   ═══════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-  loadAdminStatuses();
-  initView();  // ← restaurar preferencia de vista
-  // Keyboard shortcut Ctrl+Shift+A → admin panel
-  document.addEventListener('keydown', e => {
-    if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdminAuth(); }
-  });
-  // Close autocomplete on click outside
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.search-wrap')) hideAutocomplete();
-  });
-  if (!SHEET_CSV_URL) {
-    document.getElementById('config-banner').classList.add('show');
-    loadProducts(DEMO_PRODUCTS);
-  } else {
-    showSkeletons();
-    fetchFromSheets();
+// NUEVO: Parser robusto que soluciona "result is not defined"
+function parseCSVLine(line) {
+  let result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
   }
-});
+  result.push(current);
+  return result;
+}
+
+// NUEVO: Fetch optimizado (puente JSON)
+async function fetchFromSheets() {
+    try {
+        const res = await fetch(LEADS_ENDPOINT);
+        const data = await res.json();
+        
+        // Mapeo directo desde el formato JSON (Apps Script)
+        const products = data.slice(1).map(row => ({
+            sku: row[0] || '',
+            nombre: row[1] || '',
+            variables: row[2] ? String(row[2]).split('|') : [],
+            categoria: row[3] || 'General',
+            subCategoria: row[4] || '',
+            precio: Number(String(row[5]).replace(/[^0-9]/g, '')) || 0,
+            descripcion: row[6] || '',
+            img: row[7] || '',
+            emoji: row[8] || '📦',
+            novedad: String(row[9]).toUpperCase() === 'TRUE',
+            precioOferta: Number(String(row[10]).replace(/[^0-9]/g, '')) || 0,
+            fichaUrl: row[11] || ''
+        }));
+        loadProducts(products);
+    } catch (err) {
+        console.error("Error al cargar:", err);
+        loadProducts(DEMO_PRODUCTS); 
+    }
+}
 
 
 /* ═══════════════════════════════════════════
