@@ -8,6 +8,9 @@
 <!-- Tipografía -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 
+<!-- EmailJS — envío automático de correo sin servidor -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 <style>
 /* ══════════════════════════════════════════════════════════
    PALETA BOTICAMED — Azul corporativo + Verde salud
@@ -207,7 +210,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .btn-close-success:hover { color: var(--charcoal); }
 
 /* ══════════════════════════════════════════════════════════
-   BARRA DUAL: MÍNIMO + DESCUENTO 10% VOLUMEN
+   BARRA ESCALONADA: MÍNIMO + 3 TRAMOS DE DESCUENTO
    ══════════════════════════════════════════════════════════ */
 #order-progress-bar {
   position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
@@ -222,19 +225,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .opb-label { font-size: 11px; color: var(--mid); transition: color .3s; line-height: 1.4; }
 .opb-label strong { color: var(--charcoal); }
 .opb-label.saving { color: #15803d; font-weight: 700; }
-.opb-saving-badge {
-  display: none; align-items: center; gap: 5px;
-  background: #dcfce7; border: 1px solid #86efac;
-  border-radius: 20px; padding: 2px 11px;
-  font-size: 11px; font-weight: 700; color: #15803d;
-  white-space: nowrap; flex-shrink: 0;
-  animation: badge-pop .4s cubic-bezier(.34,1.56,.64,1);
-}
-.opb-saving-badge.show { display: flex; }
-@keyframes badge-pop {
-  from { transform: scale(.7); opacity: 0; }
-  to   { transform: scale(1);  opacity: 1; }
-}
+.opb-label.saving-5  { color: #0891b2; font-weight: 700; }
+.opb-label.saving-7  { color: #0d9488; font-weight: 700; }
+.opb-saving-badge { display: none; }
 .opb-track-wrap { position: relative; }
 .opb-track {
   height: 10px; background: #e2e8f0; border-radius: 10px;
@@ -245,9 +238,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   background: linear-gradient(90deg, var(--blue-light), var(--blue));
   width: 0%; transition: width .55s cubic-bezier(.34,1.4,.64,1), background .5s, box-shadow .5s;
 }
-.opb-fill.phase-min  { background: linear-gradient(90deg, var(--blue-light), var(--blue)); }
-.opb-fill.phase-disc { background: linear-gradient(90deg, var(--blue), #22c55e); }
-.opb-fill.phase-full {
+.opb-fill.phase-min   { background: linear-gradient(90deg, var(--blue-light), var(--blue)); }
+.opb-fill.phase-t1    { background: linear-gradient(90deg, var(--blue), #0891b2); }
+.opb-fill.phase-t2    { background: linear-gradient(90deg, #0891b2, #0d9488); }
+.opb-fill.phase-t3    {
   background: #16a34a;
   box-shadow: 0 0 0 3px rgba(34,197,94,.25);
   animation: pulse-bar 1.8s ease-in-out infinite;
@@ -256,31 +250,31 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
   50%      { box-shadow: 0 0 0 8px rgba(34,197,94,.04); }
 }
+/* Marcadores de umbral */
 .opb-milestone {
   position: absolute; top: -3px; bottom: -3px;
   width: 3px; background: white; border-radius: 2px;
-  box-shadow: 0 0 0 1.5px rgba(0,44,107,.25);
+  box-shadow: 0 0 0 1.5px rgba(0,44,107,.2);
   z-index: 2; pointer-events: none;
 }
 .opb-milestone-label {
   position: absolute; top: 13px;
   transform: translateX(-50%);
-  font-size: 8.5px; font-weight: 700;
+  font-size: 8px; font-weight: 700;
   color: var(--muted); white-space: nowrap;
 }
-.opb-legend { display: flex; justify-content: space-between; margin-top: 12px; }
-.opb-leg { font-size: 9.5px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+/* Leyenda inferior */
+.opb-legend { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; margin-top: 12px; }
+.opb-leg { font-size: 9px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
 .opb-leg-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.opb-leg-dot.blue  { background: var(--blue); }
-.opb-leg-dot.green { background: #16a34a; }
+/* Confeti */
 .confetti-container {
   position: fixed; top: 60px; left: 0; right: 0;
   height: 130px; pointer-events: none; z-index: 98; overflow: hidden;
 }
 .confetti-piece {
   position: absolute; width: 7px; height: 7px; border-radius: 2px;
-  animation: confetti-fall 1.6s ease-out forwards;
-  opacity: 0;
+  animation: confetti-fall 1.6s ease-out forwards; opacity: 0;
 }
 @keyframes confetti-fall {
   0%   { transform: translateY(-10px) rotate(0deg);   opacity: 1; }
@@ -439,9 +433,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   .cart-logo span { font-size: 15px; }
   .cart-divider { display: none; }
   .cart-items-count { font-size: 11px; }
-  .cart-bar-right { gap: 6px; }
-  #btn-cart-toggle { padding: 7px 11px; font-size: 11px; gap: 4px; }
-  #btn-send-order { padding: 7px 11px; font-size: 11px; }
+  .cart-bar-right { gap: 5px; }
+  #btn-cart-toggle { padding: 7px 10px; font-size: 11px; gap: 4px; }
+  #btn-send-order { padding: 7px 10px; font-size: 11px; }
+  #btn-share-catalog { display: none; }
+  #btn-wa-vendor { padding: 7px 10px; font-size: 11px; }
+  #btn-wa-vendor .cbar-full { display: none; }
   /* Mostrar versión corta de los botones en móvil */
   .cbar-full { display: none; }
   .cbar-mini { display: inline; }
@@ -454,7 +451,85 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   #btn-send-order { padding: 7px 9px; font-size: 10.5px; }
 }
 
-/* Fix: dark gap between config-banner and hero when banner is visible */
+/* ── BOTÓN WHATSAPP EN FOOTER ── */
+.footer-wa-btn {
+  display: inline-flex; align-items: center; gap: 9px;
+  background: var(--wa-green); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  padding: 11px 22px; border-radius: 30px; border: none; cursor: pointer;
+  text-decoration: none; margin-top: 16px;
+  transition: background .2s, transform .2s;
+  box-shadow: 0 3px 14px rgba(37,211,102,.4);
+}
+.footer-wa-btn:hover { background: var(--wa-dark); transform: translateY(-1px); }
+.footer-wa-btn svg { width: 18px; height: 18px; fill: white; flex-shrink: 0; }
+
+/* ── Botón WhatsApp "Hablar con vendedor" en header ── */
+#btn-wa-vendor {
+  background: var(--wa-green); border: none; color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 11.5px; font-weight: 700;
+  padding: 8px 13px; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: background .2s; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(37,211,102,.35);
+}
+#btn-wa-vendor:hover { background: var(--wa-dark); }
+#btn-wa-vendor svg { width: 14px; height: 14px; fill: white; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════
+   MODAL DE ÉXITO POST-PEDIDO
+   ══════════════════════════════════════════════════════════ */
+#order-success-modal .modal-box { max-width: 520px; }
+.success-receipt {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px; margin: 16px 0;
+  text-align: left; font-size: 12px;
+}
+.sr-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+}
+.sr-logo { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--blue-deep); }
+.sr-quote { font-size: 10px; color: var(--muted); text-align: right; }
+.sr-quote strong { color: var(--charcoal); font-size: 12px; display: block; }
+.sr-section { margin-bottom: 12px; }
+.sr-label { font-size: 9px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--blue); margin-bottom: 5px; }
+.sr-line { display: flex; justify-content: space-between; padding: 3px 0;
+           border-bottom: 1px solid #f0f5fb; font-size: 11.5px; gap: 8px; }
+.sr-line:last-child { border-bottom: none; }
+.sr-line span:first-child { color: var(--mid); }
+.sr-line span:last-child { font-weight: 600; color: var(--charcoal); text-align: right; }
+.sr-total-box {
+  background: var(--blue-deep); color: white; border-radius: 8px;
+  padding: 10px 14px; display: flex; justify-content: space-between;
+  align-items: center; margin-top: 10px;
+}
+.sr-total-box .label { font-size: 11px; opacity: .8; }
+.sr-total-box .value { font-family: 'DM Serif Display', serif; font-size: 20px; }
+.success-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-print {
+  width: 100%; padding: 12px; background: var(--blue-tint);
+  border: 1.5px solid var(--blue); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--blue-dark); cursor: pointer; transition: all .2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-print:hover { background: var(--blue); color: white; }
+.success-note { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.5; margin-top: 4px; }
+
+/* ── Print style ── */
+@media print {
+  body > *:not(#order-success-modal) { display: none !important; }
+  #order-success-modal { position: static !important; background: none !important; padding: 0 !important; }
+  .modal-box { box-shadow: none !important; max-width: 100% !important; }
+  .success-actions, .btn-close-success, .success-icon, .success-title, .success-note { display: none !important; }
+  .success-receipt { border: none !important; padding: 0 !important; }
+}
+
+@media (max-width: 700px) {
+  #order-success-modal .modal-box { max-width: 100%; }
+}
 #config-banner.show ~ .hero { margin-top: 0; }
 
 /* ══════════════════════════════════════════════════════════
@@ -496,7 +571,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .adm-status-select.procesado { border-color: #166534; color: #86efac; }
 .adm-status-select.cancelado { border-color: #7f1d1d; color: #fca5a5; }
 
-/* ── BOTÓN COPIAR LINK ── */
+/* ── FICHA TÉCNICA ── */
+.btn-ficha {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  width: 100%; padding: 7px; margin-top: 6px;
+  background: none; border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600;
+  color: var(--muted); cursor: pointer; text-decoration: none;
+  transition: all .2s;
+}
+.btn-ficha:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-tint); }
+.btn-ficha svg { width: 13px; height: 13px; flex-shrink: 0; }
 #btn-share-catalog {
   background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2);
   color: rgba(255,255,255,.75); font-family: 'DM Sans', sans-serif;
@@ -540,6 +625,147 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .adm-note-input::placeholder { color: #475569; }
 .adm-note-saved { font-size: 9px; color: #22c55e; opacity: 0; transition: opacity .3s; margin-top: 2px; }
 .adm-note-saved.show { opacity: 1; }
+
+/* ── SELECTOR DE TALLAS ── */
+.size-selector { margin-bottom: 10px; }
+.size-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 6px; display: block; }
+.size-label span { color: var(--charcoal); font-weight: 700; }
+.size-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.size-pill {
+  padding: 5px 12px; border: 1.5px solid var(--border); border-radius: 20px;
+  font-size: 11.5px; font-weight: 600; color: var(--mid);
+  cursor: pointer; transition: all .15s; background: white;
+  font-family: 'DM Sans', sans-serif;
+}
+.size-pill:hover { border-color: var(--blue); color: var(--blue); }
+.size-pill.selected { border-color: var(--blue); background: var(--blue); color: white; }
+.size-pill.selected:hover { background: var(--blue-hover); }
+.grid.view-list .size-selector { margin-bottom: 4px; }
+.grid.view-list .size-pills { gap: 4px; }
+.grid.view-list .size-pill { padding: 3px 8px; font-size: 10.5px; }
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  20%,60%  { transform: translateX(-4px); }
+  40%,80%  { transform: translateX(4px); }
+}
+.ofertas-carousel {
+  display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 4px 2px 16px; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ofertas-carousel::-webkit-scrollbar { display: none; }
+.ofertas-carousel .card {
+  flex: 0 0 270px; scroll-snap-align: start; min-width: 0;
+}
+@media (max-width: 700px) {
+  /* Extender carrusel de borde a borde en móvil */
+  #section-ofertas > div {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .ofertas-header { border-radius: 0; }
+  .ofertas-carousel-wrap {
+    border-radius: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .ofertas-carousel {
+    padding: 12px 16px 16px;
+    gap: 12px;
+  }
+  /* 75vw = 1 card completa + ~25% de la siguiente visible */
+  .ofertas-carousel .card { flex: 0 0 75vw; }
+}
+
+
+/* ── CATEGORÍAS DROPDOWN MÓVIL ── */
+#cat-dropdown-btn {
+  display: none; /* oculto en desktop */
+  align-items: center; gap: 8px;
+  padding: 10px 16px; border: none; background: none;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+  color: var(--blue); cursor: pointer; white-space: nowrap;
+  border-bottom: 2.5px solid var(--blue);
+}
+#cat-dropdown-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+.cat-dropdown-menu {
+  position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
+  background: white; border: 1px solid var(--border);
+  border-top: none; box-shadow: 0 8px 24px rgba(0,44,107,.12);
+  display: none; flex-direction: column;
+}
+.cat-dropdown-menu.open { display: flex; }
+.cat-drop-item {
+  padding: 13px 20px; font-size: 13px; font-weight: 600;
+  color: var(--mid); cursor: pointer; border: none; background: none;
+  text-align: left; transition: background .15s;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid #f0f5fb;
+  font-family: 'DM Sans', sans-serif;
+}
+.cat-drop-item:last-child { border-bottom: none; }
+.cat-drop-item:hover { background: var(--blue-tint); color: var(--blue); }
+.cat-drop-item.active { color: var(--blue); background: var(--blue-tint); font-weight: 700; }
+.cat-drop-item .cat-drop-icon { font-size: 16px; }
+@media (max-width: 700px) {
+  .cat-tabs { display: none; }
+  #cat-dropdown-btn { display: flex; }
+}
+
+/* ── SELECTOR DE VISTA ── */
+.view-toggle { display: flex; gap: 4px; flex-shrink: 0; }
+.vt-btn {
+  width: 32px; height: 32px; border: 1.5px solid var(--border);
+  border-radius: 8px; background: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; color: var(--muted); flex-shrink: 0;
+}
+.vt-btn:hover { border-color: var(--blue); color: var(--blue); }
+.vt-btn.active { border-color: var(--blue); background: var(--blue-tint); color: var(--blue); }
+.vt-btn svg { width: 16px; height: 16px; }
+
+/* ── VISTAS DE GRID ── */
+.grid.view-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+.grid.view-list { grid-template-columns: 1fr; }
+.grid.view-list .card { flex-direction: row; min-height: 120px; max-height: 150px; }
+.grid.view-list .card-img-wrap { width: 130px; min-width: 130px; aspect-ratio: auto; height: auto; border-radius: 12px 0 0 12px; }
+.grid.view-list .card-body { padding: 16px 20px; justify-content: center; gap: 2px; }
+.grid.view-list .card-name { font-size: 14px; margin-bottom: 2px; }
+.grid.view-list .card-subcat { margin-bottom: 4px; }
+.grid.view-list .card-specs { display: none; }
+.grid.view-list .card-footer { padding-top: 0; border-top: none; margin-top: auto; }
+.grid.view-list .card-footer-row1 { margin-bottom: 0; align-items: center; }
+.grid.view-list .price-value { font-size: 18px; }
+.grid.view-list .btn-add { display: none; }
+.grid.view-list .btn-ficha { display: none; }
+.grid.view-list .card-sku-badge { display: none; }
+.grid.view-list .card-sku-text { font-size: 10px; color: var(--muted); font-weight: 600; letter-spacing: .8px; margin-bottom: 4px; display: block; }
+.grid.view-list .qty-control { transform: scale(1.05); }
+@media (max-width: 700px) {
+  .grid.view-2 { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid.view-list .card { min-height: 105px; max-height: 125px; }
+  .grid.view-list .card-img-wrap { width: 105px; min-width: 105px; }
+  .grid.view-list .card-body { padding: 14px; }
+  .view-toggle { gap: 3px; }
+  .vt-btn { width: 28px; height: 28px; }
+}
+
+/* ── BANNER DATOS GUARDADOS ── */
+#saved-data-banner {
+  display: none; background: var(--green-light); border: 1px solid #86efac;
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+  font-size: 12.5px; color: var(--green-hover); align-items: center; gap: 10px;
+}
+#saved-data-banner.show { display: flex; }
+#saved-data-banner .sdb-icon { font-size: 18px; flex-shrink: 0; }
+#saved-data-banner .sdb-text { flex: 1; line-height: 1.4; }
+#saved-data-banner .sdb-text strong { color: #065f46; }
+#saved-data-banner .sdb-clear {
+  font-size: 11px; color: var(--muted); background: none; border: none;
+  cursor: pointer; padding: 2px 6px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0;
+}
+#saved-data-banner .sdb-clear:hover { background: #fee2e2; color: var(--danger); }
 </style>
 </head>
 <body>
@@ -552,25 +778,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 <!-- ══ CONFETI (se llena dinámicamente) ══ -->
 <div class="confetti-container" id="confetti-container"></div>
 
-<!-- ══ BARRA DUAL: MÍNIMO + DESCUENTO 10% ══ -->
+<!-- ══ BARRA ESCALONADA: MÍNIMO + 3 TRAMOS ══ -->
 <div id="order-progress-bar">
   <div class="opb-inner">
     <div class="opb-top">
       <div class="opb-label" id="opb-label">Agrega productos — Mínimo <strong>$200.000</strong> neto</div>
-      <div class="opb-saving-badge" id="opb-badge">🎉 <span id="opb-saving-amt"></span></div>
+      <div class="opb-saving-badge" id="opb-badge"><span id="opb-saving-amt"></span></div>
     </div>
     <div class="opb-track-wrap">
       <div class="opb-track">
         <div class="opb-fill phase-min" id="opb-fill"></div>
-        <!-- Marcador del mínimo: posición calculada por JS -->
-        <div class="opb-milestone" id="opb-milestone">
-          <div class="opb-milestone-label">Mínimo $200K</div>
-        </div>
+        <!-- 3 marcadores: mínimo, 5%, 7% — el 10% es el final de la pista -->
+        <div class="opb-milestone" id="opb-m0"><div class="opb-milestone-label">$200K</div></div>
+        <div class="opb-milestone" id="opb-m1"><div class="opb-milestone-label">5% · $526K</div></div>
+        <div class="opb-milestone" id="opb-m2"><div class="opb-milestone-label">7% · $752K</div></div>
       </div>
     </div>
     <div class="opb-legend">
-      <div class="opb-leg"><div class="opb-leg-dot blue"></div>Pedido mínimo $200.000</div>
-      <div class="opb-leg"><div class="opb-leg-dot green"></div>Descuento 10% desde $1.111.112</div>
+      <div class="opb-leg"><div class="opb-leg-dot" style="background:var(--blue)"></div>Mínimo $200K</div>
+      <div class="opb-leg"><div class="opb-leg-dot" style="background:#0891b2"></div>5% desc. desde $526K</div>
+      <div class="opb-leg"><div class="opb-leg-dot" style="background:#0d9488"></div>7% desc. desde $752K</div>
+      <div class="opb-leg"><div class="opb-leg-dot" style="background:#16a34a"></div>10% desc. desde $1.111K</div>
     </div>
   </div>
 </div>
@@ -594,6 +822,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     <div class="progress-message" id="progress-msg">Agrega productos para comenzar tu pedido</div>
   </div>
   <div class="cart-bar-right">
+    <button id="btn-wa-vendor" onclick="openWAConsult()" title="Hablar con un vendedor">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.557 4.12 1.526 5.853L.057 23.454l5.773-1.437A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.833 9.833 0 01-5.02-1.379l-.36-.214-3.429.855.883-3.337-.234-.374A9.802 9.802 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182 17.43 2.182 21.818 6.57 21.818 12c0 5.43-4.388 9.818-9.818 9.818z"/></svg>
+      <span class="cbar-full">Hablar con vendedor</span>
+    </button>
     <button id="btn-share-catalog" onclick="copyShareLink()" title="Copiar link del catálogo">
       🔗 <span class="cbar-full">Copiar link</span>
     </button>
@@ -625,7 +857,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     <div class="df-row"><span>Productos</span><span id="df-count">0 unidades</span></div>
     <div class="df-row subtotal-neto"><span>Subtotal Neto</span><span id="df-neto">$0</span></div>
     <div class="df-row" id="df-discount-row" style="display:none;color:#15803d;font-weight:600;">
-      <span>🎉 Descuento volumen 10%</span><span id="df-discount" style="color:#15803d;">−$0</span>
+      <span id="df-discount-label">🎉 Descuento activo</span><span id="df-discount" style="color:#dc2626;">−$0</span>
+    </div>
+    <div class="df-row" id="df-saving-row" style="display:none;background:#f0fdf4;border-radius:8px;padding:6px 10px;margin:4px 0;border:1px solid #86efac;">
+      <span style="font-size:11px;color:#15803d;font-weight:700;" id="df-saving-msg">Estás ahorrando</span>
     </div>
     <div class="df-row subtotal-neto" id="df-neto-desc-row" style="display:none;font-weight:700;">
       <span>Neto con descuento</span><span id="df-neto-desc">$0</span>
@@ -647,10 +882,23 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
       <div class="modal-header-icon">💬</div>
       <div class="modal-header-text">
         <h2>Confirmar Pedido</h2>
-        <p>Completa los datos y enviaremos el pedido directo por WhatsApp a Boticamed.</p>
+        <p>Completa tus datos y recibiremos tu pedido por correo. Te confirmaremos disponibilidad de stock y próximos pasos.</p>
       </div>
     </div>
     <div class="modal-body">
+
+      <!-- Banner datos guardados -->
+      <div id="saved-data-banner">
+        <span class="sdb-icon">👤</span>
+        <div class="sdb-text">Bienvenido de nuevo, <strong id="sdb-name"></strong> — tus datos han sido pre-cargados.</div>
+        <button class="sdb-clear" onclick="clearSavedData()">Borrar</button>
+      </div>
+
+      <!-- Aviso de stock -->
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#9a3412;display:flex;align-items:flex-start;gap:8px;">
+        <span style="flex-shrink:0;font-size:15px;">⚠️</span>
+        <span><strong>Nota importante:</strong> Este pedido no confirma ni asegura stock. Una vez recibido, el equipo de Boticamed verificará disponibilidad y te contactará para confirmar.</span>
+      </div>
 
       <!-- Resumen del pedido -->
       <div class="modal-summary">
@@ -660,7 +908,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
           <span>Subtotal Neto</span><span id="modal-neto-val">$0</span>
         </div>
         <div class="ms-total" id="modal-discount-row" style="display:none;border-top:none;margin-top:4px;padding-top:0;font-weight:700;font-size:12px;color:#15803d;">
-          <span>🎉 Descuento volumen 10%</span><span id="modal-discount-val">−$0</span>
+          <span id="modal-discount-label">🎉 Descuento volumen</span><span id="modal-discount-val">−$0</span>
         </div>
         <div class="ms-total" id="modal-neto-desc-row" style="display:none;border-top:none;margin-top:4px;padding-top:0;font-weight:700;font-size:13px;">
           <span>Neto con descuento</span><span id="modal-neto-desc-val">$0</span>
@@ -742,12 +990,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeFormModal()">Cancelar</button>
-      <button class="btn-primary" id="btn-send-wa" onclick="submitOrder()" style="background:var(--wa-green);">
+      <button class="btn-primary" id="btn-send-wa" onclick="submitOrder()">
         <div class="spinner"></div>
-        <span class="btn-text">
-          <svg style="width:14px;height:14px;vertical-align:middle;margin-right:5px;" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.557 4.12 1.526 5.853L.057 23.454l5.773-1.437A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.833 9.833 0 01-5.02-1.379l-.36-.214-3.429.855.883-3.337-.234-.374A9.802 9.802 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182 17.43 2.182 21.818 6.57 21.818 12c0 5.43-4.388 9.818-9.818 9.818z"/></svg>
-          Enviar por WhatsApp
-        </span>
+        <span class="btn-text">✉️ Confirmar Pedido</span>
       </button>
     </div>
   </div>
@@ -775,9 +1020,29 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 </div>
 
 <!-- ══ CAT NAV ══ -->
-<nav class="cat-nav">
+<nav class="cat-nav" style="position:relative;">
   <div class="cat-nav-inner">
+    <!-- Dropdown móvil -->
+    <button id="cat-dropdown-btn" onclick="toggleCatDropdown()">
+      <svg viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="1" width="16" height="2.5" rx="1.25"/><rect x="0" y="6.75" width="16" height="2.5" rx="1.25"/><rect x="0" y="12.5" width="16" height="2.5" rx="1.25"/></svg>
+      <span id="cat-dropdown-label">Categorías</span>
+      <svg viewBox="0 0 10 6" fill="currentColor" style="width:10px;height:6px;margin-left:2px;"><path d="M0 0l5 6 5-6H0z"/></svg>
+    </button>
+    <div class="cat-dropdown-menu" id="cat-dropdown-menu"></div>
+
+    <!-- Tabs desktop -->
     <div class="cat-tabs" id="cat-tabs"></div>
+    <div class="view-toggle" id="view-toggle">
+      <button class="vt-btn active" id="vt-3" onclick="setView(3,this)" title="3 columnas">
+        <svg viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="4" height="4" rx="1"/><rect x="6" y="0" width="4" height="4" rx="1"/><rect x="12" y="0" width="4" height="4" rx="1"/><rect x="0" y="6" width="4" height="4" rx="1"/><rect x="6" y="6" width="4" height="4" rx="1"/><rect x="12" y="6" width="4" height="4" rx="1"/><rect x="0" y="12" width="4" height="4" rx="1"/><rect x="6" y="12" width="4" height="4" rx="1"/><rect x="12" y="12" width="4" height="4" rx="1"/></svg>
+      </button>
+      <button class="vt-btn" id="vt-2" onclick="setView(2,this)" title="2 columnas">
+        <svg viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="0" width="7" height="7" rx="1"/><rect x="9" y="0" width="7" height="7" rx="1"/><rect x="0" y="9" width="7" height="7" rx="1"/><rect x="9" y="9" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="vt-btn" id="vt-1" onclick="setView(1,this)" title="Lista">
+        <svg viewBox="0 0 16 16" fill="currentColor"><rect x="0" y="1" width="16" height="3" rx="1.5"/><rect x="0" y="6.5" width="16" height="3" rx="1.5"/><rect x="0" y="12" width="16" height="3" rx="1.5"/></svg>
+      </button>
+    </div>
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
       <input type="search" id="search-input" placeholder="Buscar por SKU o nombre…"
@@ -801,8 +1066,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
         <p>Precios especiales · Solo por tiempo limitado · Stock sujeto a disponibilidad</p>
       </div>
     </div>
-    <div class="ofertas-grid-wrap">
-      <div class="grid" id="ofertas-grid"></div>
+    <div class="ofertas-carousel-wrap" style="padding:16px 20px 20px;background:#fff5f5;border:1.5px solid #fecaca;border-top:none;border-radius:0 0 16px 16px;">
+      <div class="ofertas-carousel" id="ofertas-grid"></div>
     </div>
   </div>
 </div>
@@ -818,6 +1083,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   <strong>Boticamed SPA</strong> · RUT 77.150.939-8 · Carretera General San Martín 8000, Bodega 202, Quilicura<br>
   📧 bsilva@boticamed.cl &nbsp;·&nbsp; 📞 +56 9 7970 7156 &nbsp;·&nbsp; Atención L–V 08:30–17:30 hrs.<br>
   <span style="font-size:11px;opacity:.6;">Lista de precios mayo 2026 · Uso exclusivo mayoristas · Precios en CLP · Pedido mínimo $200.000</span><br>
+  <a class="footer-wa-btn" onclick="openWAConsult()" href="#">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.557 4.12 1.526 5.853L.057 23.454l5.773-1.437A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.833 9.833 0 01-5.02-1.379l-.36-.214-3.429.855.883-3.337-.234-.374A9.802 9.802 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182 17.43 2.182 21.818 6.57 21.818 12c0 5.43-4.388 9.818-9.818 9.818z"/></svg>
+    Consultar con Boticamed por WhatsApp
+  </a><br>
   <button onclick="openAdminAuth()" style="background:none;border:none;color:rgba(255,255,255,.15);font-size:10px;cursor:pointer;margin-top:6px;padding:4px 8px;border-radius:4px;" title="Panel administrador">⚙ Admin</button>
 </footer>
 
@@ -892,6 +1161,39 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   </div>
 </div>
 
+<!-- ══ BOTÓN WHATSAPP CONSULTAS (en el footer) ══ -->
+<!-- Se inyecta en el footer vía JS -->
+
+<!-- ══ MODAL DE ÉXITO POST-PEDIDO ══ -->
+<div class="modal-overlay" id="order-success-modal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="success-body" style="text-align:center;padding:36px 28px;">
+      <div class="success-icon">✅</div>
+      <div class="success-title">¡Pedido recibido!</div>
+      <p style="font-size:13px;color:var(--mid);line-height:1.6;margin:10px 0 20px;">
+        Tu pedido fue enviado exitosamente a Boticamed.<br>
+        Nos pondremos en contacto contigo a la brevedad.
+      </p>
+
+      <!-- Número de orden -->
+      <div style="background:var(--blue-tint);border:1px solid var(--border);border-radius:12px;padding:14px 20px;margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:4px;">Número de orden</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--blue-deep);letter-spacing:-0.5px;" id="sr-quote-num">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;" id="sr-email-status">📧 Enviando confirmación por correo…</div>
+      </div>
+
+      <!-- Botón WhatsApp opcional -->
+      <button class="btn-wa" onclick="sendSuccessWA()" style="margin-bottom:10px;">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px;flex-shrink:0;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.557 4.12 1.526 5.853L.057 23.454l5.773-1.437A11.944 11.944 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.833 9.833 0 01-5.02-1.379l-.36-.214-3.429.855.883-3.337-.234-.374A9.802 9.802 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182 17.43 2.182 21.818 6.57 21.818 12c0 5.43-4.388 9.818-9.818 9.818z"/></svg>
+        También confirmar por WhatsApp
+      </button>
+      <button class="btn-close-success" onclick="closeSuccessModal()">
+        Cerrar y seguir comprando
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════════════════
    ⚙️  CONFIGURACIÓN — EDITA SOLO ESTOS VALORES
@@ -918,16 +1220,54 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 // ── PEGA AQUÍ TU URL CSV DE GOOGLE SHEETS ──
 const SHEET_CSV_URL   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQY-OCVtrCTJvNtEt6wBbmuy-tM-cfyKOH9UlzpqkbLcPAsqASvTZnyRhBoqpthtWLBlaoU3X9rHaBK/pub?gid=0&single=true&output=csv';
 
-// ── Pestaña Leads (para el panel admin, URL aparte si tienes otra pestaña publicada) ──
-const LEADS_CSV_URL   = '';                        // ← URL CSV de la pestaña Leads (opcional)
+// ── Pestaña Leads (URL CSV de la pestaña Leads publicada) ──
+const LEADS_CSV_URL   = '';
+
+/*
+  COLUMNAS DE TU GOOGLE SHEETS (en este orden exacto):
+  A = SKU
+  B = Nombre
+  C = Variable      ← Tallas separadas por | (ej: S|M|L|XL). Dejar vacío si no aplica.
+  D = Categoría
+  E = Sub Categoría
+  F = Precio        (solo número, sin puntos ni $)
+  G = Descripción   (specs separadas por |)
+  H = URL Imagen
+  I = Emoji
+  J = Novedad       (TRUE o FALSE)
+  K = Precio Oferta (vacío si no tiene oferta)
+  L = URL Ficha Técnica PDF (opcional)
+*/
 
 const WA_NUMBER       = '56979707156';             // ← WhatsApp Boticamed (sin + ni espacios)
 const MIN_ORDER       = 200000;                    // ← Pedido mínimo CLP (neto)
-const DISCOUNT_THRESHOLD = 1111112;               // ← Umbral descuento 10% por volumen (neto)
-const DISCOUNT_PCT    = 0.10;                      // ← Porcentaje de descuento por volumen
+
+// ── DESCUENTO ESCALONADO POR VOLUMEN ─────────────────────────────────────
+// Tramo 1: 5% cuando el neto supere $526.316
+// Tramo 2: 7% cuando el neto supere $752.688
+// Tramo 3: 10% cuando el neto supere $1.111.112
+const DISCOUNT_TIERS = [
+  { threshold: 526316,  pct: 0.05, label: '5%'  },
+  { threshold: 752688,  pct: 0.07, label: '7%'  },
+  { threshold: 1111112, pct: 0.10, label: '10%' },
+];
+// Mantener compatibilidad con código que use DISCOUNT_THRESHOLD/PCT
+const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[2].threshold; // umbral máximo (10%)
+const DISCOUNT_PCT       = DISCOUNT_TIERS[2].pct;
 const LEADS_ENDPOINT  = '';                        // ← URL del Web App de Google Apps Script
 const LOGO_URL        = 'https://boticamed.b-cdn.net/wp-content/uploads/2024/07/boticamed-logo.png.webp';
 const ADMIN_PASSWORD  = '13287Boticamed%';           // ← Clave del panel de administración (cámbiala)
+
+// ── EMAILJS — Configuración envío automático de correo ──────────────────────
+// PASO 1: Crear cuenta gratis en https://www.emailjs.com
+// PASO 2: Conectar tu Gmail en Email Services → Add New Service → Gmail
+// PASO 3: Crear plantilla en Email Templates → Create New Template
+//         En "To Email" pon: bsilva@boticamed.cl
+//         En el body usa las variables: {{quote}}, {{empresa}}, {{rut}}, {{detalle}}, {{total}}
+// PASO 4: Copia los 3 valores y pégalos abajo
+const EMAILJS_PUBLIC_KEY  = 'TU_PUBLIC_KEY';    // ← Account → API Keys → Public Key
+const EMAILJS_SERVICE_ID  = 'TU_SERVICE_ID';    // ← Email Services → tu servicio → Service ID
+const EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';   // ← Email Templates → tu plantilla → Template ID
 
 // ── CONDICIONES COMERCIALES — Se incluyen en el mensaje de WhatsApp ──
 const CONDITIONS = {
@@ -940,25 +1280,25 @@ const CONDITIONS = {
    DATOS DEMO
    ═══════════════════════════════════════════════════ */
 const DEMO_PRODUCTS = [
-  { sku:'BM904ABJ-46', nombre:'Silla de Ruedas Geriátrica',                categoria:'Sillas de Ruedas', precio:79990,  precioOferta:0,     descripcion:'Estructura acero con pintura en polvo negra|Apoyabrazos PU y asiento PVC desmontables|Apoyapiés desmontables con plataforma plástica|Frenos sistema unido para acompañante', img:'', emoji:'♿', novedad:false },
-  { sku:'BM909AB-46',  nombre:'Silla de Ruedas MAG + Apoyabrazos Abatible',categoria:'Sillas de Ruedas', precio:99990,  precioOferta:84990, descripcion:'Acero esmaltado negro · respaldo plegable|Apoyabrazos abatibles/desmontables · tapiz nylon|Ruedas traseras 24" · delanteras 8" macizas|Asiento 46 cm · Cap. 125 kg · Peso 17,5 kg', img:'', emoji:'♿', novedad:false },
-  { sku:'BM951B-56',   nombre:'Silla de Ruedas Bariátrica 130 kg · 56 cm', categoria:'Sillas de Ruedas', precio:149990, precioOferta:0,     descripcion:'Acero reforzado negro (powder coating)|Asiento nylon 56 cm · apoyabrazos abatibles|Ruedas macizas PU · ruedas antivuelco|Ancho total 76 cm · Cap. 130 kg · Peso 19,8 kg', img:'', emoji:'♿', novedad:false },
-  { sku:'BM956Q-60',   nombre:'Silla de Ruedas Bariátrica 225 kg · 60 cm', categoria:'Sillas de Ruedas', precio:299990, precioOferta:0,     descripcion:'Acero A3 gran tensión antioxidante · plegable|Asiento Oxford ultra resistente · brazos abatibles|Traseras 24" desmontaje rápido · delanteras 8"|Asiento 60 cm · Cap. 225 kg · Peso 21,7 kg', img:'', emoji:'♿', novedad:false },
-  { sku:'BM123',       nombre:'Silla de Ruedas Eléctrica Estándar',         categoria:'Sillas de Ruedas', precio:324990, precioOferta:289990,descripcion:'2 motores 250W · batería ácido-plomo 12/20Ah|Velocidad máx. 6 km/h · autonomía 15 km|Ruedas traseras 16" neumáticas · delanteras 10" PU|Asiento 46 cm · Cap. 120 kg · estructura plegable', img:'', emoji:'⚡', novedad:true },
-  { sku:'BM881',       nombre:'Alza Baño con Manillas',                      categoria:'Baño & Higiene',   precio:19990,  precioOferta:0,     descripcion:'Plástico ABS alta densidad · seguro de fijación|Apoyabrazos ergonómicos 33 cm · asiento 12 cm|43,7 × 52,8 cm · Peso 3 kg · Cap. 100 kg', img:'', emoji:'🚽', novedad:false },
-  { sku:'BM894',       nombre:'Baño Portátil Plegable',                      categoria:'Baño & Higiene',   precio:29990,  precioOferta:0,     descripcion:'Acero 20 mm · plegable · altura regulable 5 niveles|Balde con tapa · asiento PVC · apoyabrazos texturizados|Ancho 46 cm · Cap. 100 kg · Peso 7 kg', img:'', emoji:'🪑', novedad:false },
-  { sku:'BM810-BQ',    nombre:'Baño Portátil 136 kg',                        categoria:'Baño & Higiene',   precio:30990,  precioOferta:0,     descripcion:'Acero inoxidable esmaltado · plegable|Asiento 46 cm · profundidad 50 cm · altura 60–75 cm|Capacidad 136 kg · diseño reforzado', img:'', emoji:'🪑', novedad:false },
-  { sku:'BM798LQ-A',   nombre:'Silla de Ducha con Respaldo y Apoyabrazos',   categoria:'Baño & Higiene',   precio:24990,  precioOferta:0,     descripcion:'Altura asiento 35–46 cm · total hasta 80 cm|Asiento PVC 53 cm · patas antideslizantes|Profundidad 34 cm · Cap. 100 kg', img:'', emoji:'🚿', novedad:false },
-  { sku:'BM7100L',     nombre:'Tabla para Tina',                             categoria:'Baño & Higiene',   precio:21990,  precioOferta:0,     descripcion:'Polipropileno impermeable hipoalergénico con drenaje|Asa integrada · 4 tornillos antideslizantes|Compatible tinas 40–62 cm · Cap. 100 kg · 2,49 kg', img:'', emoji:'🛁', novedad:false },
-  { sku:'BM667B',      nombre:'Lavapelo Rígido',                             categoria:'Baño & Higiene',   precio:9990,   precioOferta:0,     descripcion:'Plástico durable · resistente a agua caliente y químicos|Soporte ergonómico para cuello · manguera de drenaje|Ideal para pacientes postrados · uso en cama', img:'', emoji:'💆', novedad:false },
-  { sku:'BM2100',      nombre:'Lavapelo Inflable',                           categoria:'Baño & Higiene',   precio:14990,  precioOferta:0,     descripcion:'PVC alta resistencia 0,4 mm|Incluye bolso, manguera, clips y bomba manual|23 × 62 × 53 cm · kit completo portátil', img:'', emoji:'💆', novedad:false },
-  { sku:'BM913L',      nombre:'Andador Articulado y Plegable',               categoria:'Movilidad',        precio:18990,  precioOferta:0,     descripcion:'Aluminio alta resistencia · color cromo brillante|Altura regulable 76–94 cm|Dimensiones: 51 cm largo × 57 cm ancho', img:'', emoji:'🚶', novedad:false },
-  { sku:'BM2691',      nombre:'Colchón Antiescaras Burbuja Clase I (Low Risk)',    categoria:'Cama & Descanso', precio:23990, precioOferta:0, descripcion:'110V/220V · flujo 5–7 L/min · ciclo 12 min|PVC K80 0,3 mm · 130 burbujas con solapas|200 × 90 × 7 cm · Cap. 135 kg', img:'', emoji:'🛏️', novedad:false },
-  { sku:'BM2692',      nombre:'Colchón Antiescaras Tubular Clase II (Middle Risk)',categoria:'Cama & Descanso', precio:64990, precioOferta:0, descripcion:'Flujo 6–8 L/min · 7W · fusible 1A incluido|17–18 celdas Nylon PVC médico · altura 11,5 cm|Válvula CPR · kit reparación · 200 × 90 cm · Cap. 145 kg', img:'', emoji:'🛏️', novedad:false },
-  { sku:'BM2693',      nombre:'Colchón Antiescaras Tubular Clase III (High Risk)', categoria:'Cama & Descanso', precio:164990,precioOferta:0, descripcion:'Bomba aluminio · sistema alternante AB/ABC|18/24 celdas Nylon PVC/TPU · altura 12,7 cm|Válvula CPR · filtro de aire · conectores CPC', img:'', emoji:'🛏️', novedad:false },
-  { sku:'BM782-30',    nombre:'Barra de Seguridad 30 cm',                   categoria:'Seguridad',        precio:4990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 30 cm', img:'', emoji:'🔩', novedad:false },
-  { sku:'BM782-40',    nombre:'Barra de Seguridad 40 cm',                   categoria:'Seguridad',        precio:5990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 40 cm', img:'', emoji:'🔩', novedad:false },
-  { sku:'BM782-60',    nombre:'Barra de Seguridad 60 cm',                   categoria:'Seguridad',        precio:6990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 60 cm', img:'', emoji:'🔩', novedad:false },
+  { sku:'BM904ABJ-46', nombre:'Silla de Ruedas Geriátrica',                categoria:'Sillas de Ruedas', precio:79990,  precioOferta:0,     descripcion:'Estructura acero con pintura en polvo negra|Apoyabrazos PU y asiento PVC desmontables|Apoyapiés desmontables con plataforma plástica|Frenos sistema unido para acompañante', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
+  { sku:'BM909AB-46',  nombre:'Silla de Ruedas MAG + Apoyabrazos Abatible',categoria:'Sillas de Ruedas', precio:99990,  precioOferta:84990, descripcion:'Acero esmaltado negro · respaldo plegable|Apoyabrazos abatibles/desmontables · tapiz nylon|Ruedas traseras 24" · delanteras 8" macizas|Asiento 46 cm · Cap. 125 kg · Peso 17,5 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
+  { sku:'BM951B-56',   nombre:'Silla de Ruedas Bariátrica 130 kg · 56 cm', categoria:'Sillas de Ruedas', precio:149990, precioOferta:0,     descripcion:'Acero reforzado negro (powder coating)|Asiento nylon 56 cm · apoyabrazos abatibles|Ruedas macizas PU · ruedas antivuelco|Ancho total 76 cm · Cap. 130 kg · Peso 19,8 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
+  { sku:'BM956Q-60',   nombre:'Silla de Ruedas Bariátrica 225 kg · 60 cm', categoria:'Sillas de Ruedas', precio:299990, precioOferta:0,     descripcion:'Acero A3 gran tensión antioxidante · plegable|Asiento Oxford ultra resistente · brazos abatibles|Traseras 24" desmontaje rápido · delanteras 8"|Asiento 60 cm · Cap. 225 kg · Peso 21,7 kg', img:'', emoji:'♿', novedad:false, fichaUrl:'' },
+  { sku:'BM123',       nombre:'Silla de Ruedas Eléctrica Estándar',         categoria:'Sillas de Ruedas', precio:324990, precioOferta:289990,descripcion:'2 motores 250W · batería ácido-plomo 12/20Ah|Velocidad máx. 6 km/h · autonomía 15 km|Ruedas traseras 16" neumáticas · delanteras 10" PU|Asiento 46 cm · Cap. 120 kg · estructura plegable', img:'', emoji:'⚡', novedad:true, fichaUrl:'' },
+  { sku:'BM881',       nombre:'Alza Baño con Manillas',                      categoria:'Baño & Higiene',   precio:19990,  precioOferta:0,     descripcion:'Plástico ABS alta densidad · seguro de fijación|Apoyabrazos ergonómicos 33 cm · asiento 12 cm|43,7 × 52,8 cm · Peso 3 kg · Cap. 100 kg', img:'', emoji:'🚽', novedad:false, fichaUrl:'' },
+  { sku:'BM894',       nombre:'Baño Portátil Plegable',                      categoria:'Baño & Higiene',   precio:29990,  precioOferta:0,     descripcion:'Acero 20 mm · plegable · altura regulable 5 niveles|Balde con tapa · asiento PVC · apoyabrazos texturizados|Ancho 46 cm · Cap. 100 kg · Peso 7 kg', img:'', emoji:'🪑', novedad:false, fichaUrl:'' },
+  { sku:'BM810-BQ',    nombre:'Baño Portátil 136 kg',                        categoria:'Baño & Higiene',   precio:30990,  precioOferta:0,     descripcion:'Acero inoxidable esmaltado · plegable|Asiento 46 cm · profundidad 50 cm · altura 60–75 cm|Capacidad 136 kg · diseño reforzado', img:'', emoji:'🪑', novedad:false, fichaUrl:'' },
+  { sku:'BM798LQ-A',   nombre:'Silla de Ducha con Respaldo y Apoyabrazos',   categoria:'Baño & Higiene',   precio:24990,  precioOferta:0,     descripcion:'Altura asiento 35–46 cm · total hasta 80 cm|Asiento PVC 53 cm · patas antideslizantes|Profundidad 34 cm · Cap. 100 kg', img:'', emoji:'🚿', novedad:false, fichaUrl:'' },
+  { sku:'BM7100L',     nombre:'Tabla para Tina',                             categoria:'Baño & Higiene',   precio:21990,  precioOferta:0,     descripcion:'Polipropileno impermeable hipoalergénico con drenaje|Asa integrada · 4 tornillos antideslizantes|Compatible tinas 40–62 cm · Cap. 100 kg · 2,49 kg', img:'', emoji:'🛁', novedad:false, fichaUrl:'' },
+  { sku:'BM667B',      nombre:'Lavapelo Rígido',                             categoria:'Baño & Higiene',   precio:9990,   precioOferta:0,     descripcion:'Plástico durable · resistente a agua caliente y químicos|Soporte ergonómico para cuello · manguera de drenaje|Ideal para pacientes postrados · uso en cama', img:'', emoji:'💆', novedad:false, fichaUrl:'' },
+  { sku:'BM2100',      nombre:'Lavapelo Inflable',                           categoria:'Baño & Higiene',   precio:14990,  precioOferta:0,     descripcion:'PVC alta resistencia 0,4 mm|Incluye bolso, manguera, clips y bomba manual|23 × 62 × 53 cm · kit completo portátil', img:'', emoji:'💆', novedad:false, fichaUrl:'' },
+  { sku:'BM913L',      nombre:'Andador Articulado y Plegable',               categoria:'Movilidad',        precio:18990,  precioOferta:0,     descripcion:'Aluminio alta resistencia · color cromo brillante|Altura regulable 76–94 cm|Dimensiones: 51 cm largo × 57 cm ancho', img:'', emoji:'🚶', novedad:false, fichaUrl:'' },
+  { sku:'BM2691',      nombre:'Colchón Antiescaras Burbuja Clase I (Low Risk)',    categoria:'Cama & Descanso', precio:23990, precioOferta:0, descripcion:'110V/220V · flujo 5–7 L/min · ciclo 12 min|PVC K80 0,3 mm · 130 burbujas con solapas|200 × 90 × 7 cm · Cap. 135 kg', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
+  { sku:'BM2692',      nombre:'Colchón Antiescaras Tubular Clase II (Middle Risk)',categoria:'Cama & Descanso', precio:64990, precioOferta:0, descripcion:'Flujo 6–8 L/min · 7W · fusible 1A incluido|17–18 celdas Nylon PVC médico · altura 11,5 cm|Válvula CPR · kit reparación · 200 × 90 cm · Cap. 145 kg', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
+  { sku:'BM2693',      nombre:'Colchón Antiescaras Tubular Clase III (High Risk)', categoria:'Cama & Descanso', precio:164990,precioOferta:0, descripcion:'Bomba aluminio · sistema alternante AB/ABC|18/24 celdas Nylon PVC/TPU · altura 12,7 cm|Válvula CPR · filtro de aire · conectores CPC', img:'', emoji:'🛏️', novedad:false, fichaUrl:'' },
+  { sku:'BM782-30',    nombre:'Barra de Seguridad 30 cm',                   categoria:'Seguridad',        precio:4990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 30 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
+  { sku:'BM782-40',    nombre:'Barra de Seguridad 40 cm',                   categoria:'Seguridad',        precio:5990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 40 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
+  { sku:'BM782-60',    nombre:'Barra de Seguridad 60 cm',                   categoria:'Seguridad',        precio:6990,   precioOferta:0,     descripcion:'Acero inoxidable 304 · antioxidante|Acabado cromo brillante · longitud 60 cm', img:'', emoji:'🔩', novedad:false, fichaUrl:'' },
 ];
 
 const CATEGORY_ICONS = { 'Sillas de Ruedas':'♿', 'Baño & Higiene':'🚿', 'Movilidad':'🚶', 'Cama & Descanso':'🛏️', 'Seguridad':'🛡️' };
@@ -979,6 +1319,7 @@ let adminStatuses = {};
    ═══════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   loadAdminStatuses();
+  initView();  // ← restaurar preferencia de vista
   // Keyboard shortcut Ctrl+Shift+A → admin panel
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdminAuth(); }
@@ -1027,56 +1368,104 @@ function showSkeletons() {
    GOOGLE SHEETS — FETCH CSV DIRECTO
    ═══════════════════════════════════════════ */
 async function fetchFromSheets() {
-  try {
-    const res = await fetch(SHEET_CSV_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const csv = await res.text();
-    const products = parseCSV(csv);
-    if (!products.length) throw new Error('La hoja está vacía o sin datos válidos');
-    loadProducts(products);
-  } catch (err) {
-    console.error('Sheets CSV error:', err);
-    showToast('⚠️ Error al cargar el catálogo. Mostrando datos demo.');
-    document.getElementById('config-banner').classList.add('show');
-    loadProducts(DEMO_PRODUCTS);
+  // ── Lista de estrategias: directo primero, luego proxies en cascada
+  const strategies = [
+    { label: 'directo',     url: () => SHEET_CSV_URL },
+    { label: 'corsproxy',   url: () => `https://corsproxy.io/?${encodeURIComponent(SHEET_CSV_URL)}` },
+    { label: 'allorigins',  url: () => `https://api.allorigins.win/raw?url=${encodeURIComponent(SHEET_CSV_URL)}` },
+    { label: 'thingproxy',  url: () => `https://thingproxy.freeboard.io/fetch/${SHEET_CSV_URL}` },
+  ];
+
+  let lastError = '';
+
+  for (const s of strategies) {
+    try {
+      const res = await fetch(s.url(), { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const csv = await res.text();
+
+      // Detectar respuestas de error de Google
+      if (csv.includes('Host not in allowlist') || csv.startsWith('<!DOCTYPE') || csv.startsWith('<html')) {
+        throw new Error('UNPUBLISHED');
+      }
+
+      const products = parseCSV(csv);
+      if (!products.length) throw new Error('EMPTY');
+
+      console.log(`✅ Catálogo cargado vía: ${s.label}`);
+      loadProducts(products);
+      return; // éxito
+
+    } catch (err) {
+      console.warn(`⚠️ Estrategia [${s.label}] falló:`, err.message);
+      lastError = err.message;
+    }
   }
+
+  // Todos los métodos fallaron
+  let userMsg = '';
+  if (lastError === 'UNPUBLISHED') {
+    userMsg = '⚠️ Tu Google Sheets no está publicado. Ve a <strong>Archivo → Publicar en la web → CSV</strong> y vuelve a intentar.';
+  } else if (lastError === 'EMPTY') {
+    userMsg = '⚠️ El Sheets no tiene productos. Verifica que tienes datos desde la fila 2.';
+  } else {
+    userMsg = '⚠️ No se pudo conectar con Google Sheets. Verifica que estás usando la URL publicada correctamente. <a href="https://wa.me/56979707156" style="color:#92400e;font-weight:700;">Ayuda →</a>';
+  }
+
+  console.error('fetchFromSheets: todos los métodos fallaron. Último error:', lastError);
+  showBannerError(userMsg);
+  loadProducts(DEMO_PRODUCTS);
+}
+
+function showBannerError(msg) {
+  const banner = document.getElementById('config-banner');
+  banner.innerHTML = msg + ' <a href="https://wa.me/56979707156?text=Error+catálogo: ' + encodeURIComponent(msg) + '" style="color:#92400e;font-weight:700;text-decoration:underline;" target="_blank">Ayuda →</a>';
+  banner.classList.add('show');
 }
 
 function parseCSV(csv) {
   const lines = csv.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length < 2) return [];
 
-  // Saltar la fila de encabezados (fila 0)
-  const rows = lines.slice(1);
+  const rows = lines.slice(1); // saltar encabezados
   const products = [];
 
   for (const line of rows) {
-    // Parser CSV simple con soporte para comillas
     const cols = parseCSVLine(line);
     const sku = (cols[0] || '').trim();
     if (!sku) continue;
 
-    const precio      = Number((cols[4] || '0').replace(/[^0-9.]/g, '').replace(/\.(?=.*\.)/g, '')) || 0;
-    const precioOferta= Number((cols[9] || '0').replace(/[^0-9.]/g, '').replace(/\.(?=.*\.)/g, '')) || 0;
+    // Columnas del CSV (nuevo orden con Variable en col C):
+    // A=0 SKU | B=1 Nombre | C=2 Variable | D=3 Categoría | E=4 Sub Categoría
+    // F=5 Precio | G=6 Descripción | H=7 URL Imagen | I=8 Emoji | J=9 Novedad
+    // K=10 Precio Oferta | L=11 Ficha Técnica URL (opcional)
+    const precio       = Number((cols[5] || '0').replace(/[^0-9]/g, '')) || 0;
+    const precioOferta = Number((cols[10]|| '0').replace(/[^0-9]/g, '')) || 0;
+    const variableRaw  = (cols[2] || '').trim();
+    // Normalizar tallas: S|M|L|xl → ['S','M','L','XL']
+    const variables    = variableRaw
+      ? variableRaw.split('|').map(v => v.trim().toUpperCase()).filter(Boolean)
+      : [];
 
     products.push({
       sku,
       nombre:       (cols[1] || '').trim(),
-      categoria:    (cols[2] || 'General').trim(),
-      subCategoria: (cols[3] || '').trim(),
+      variables,                              // ← array de tallas ['S','M','L']
+      categoria:    (cols[3] || 'General').trim(),
+      subCategoria: (cols[4] || '').trim(),
       precio,
-      descripcion:  (cols[5] || '').trim(),
-      img:          (cols[6] || '').trim(),
-      emoji:        (cols[7] || '📦').trim(),
-      novedad:      (cols[8] || '').toUpperCase() === 'TRUE',
+      descripcion:  (cols[6] || '').trim(),
+      img:          (cols[7] || '').trim(),
+      emoji:        (cols[8] || '📦').trim(),
+      novedad:      (cols[9] || '').toUpperCase() === 'TRUE',
       precioOferta,
+      fichaUrl:     (cols[11] || '').trim(),
     });
   }
   return products;
 }
 
 function parseCSVLine(line) {
-  const result = [];
   let current = '';
   let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
@@ -1109,9 +1498,23 @@ function loadProducts(products) {
 
 function renderCategoryNav(products) {
   const cats = [...new Set(products.map(p => p.categoria))];
+  // Desktop tabs
   document.getElementById('cat-tabs').innerHTML = cats.map((cat, i) =>
     `<button class="cat-btn${i===0?' active':''}" data-cat="${cat}" onclick="goTo('cat-${slugify(cat)}',this)">${cat}</button>`
   ).join('');
+  // Mobile dropdown
+  const menu = document.getElementById('cat-dropdown-menu');
+  if (menu) {
+    menu.innerHTML = cats.map((cat, i) => {
+      const icon = CATEGORY_ICONS[cat] || '📦';
+      return `<button class="cat-drop-item${i===0?' active':''}" data-cat="${cat}"
+        onclick="selectCatDropdown('cat-${slugify(cat)}','${cat}',this)">
+        <span class="cat-drop-icon">${icon}</span>${cat}
+      </button>`;
+    }).join('');
+    // Set first label
+    if (cats.length) document.getElementById('cat-dropdown-label').textContent = cats[0];
+  }
 }
 
 function renderSections(products) {
@@ -1135,6 +1538,7 @@ function renderSections(products) {
   document.getElementById('main-content').innerHTML = html;
   document.querySelectorAll('.card').forEach((c,i) => c.style.animationDelay = (i*.04)+'s');
   setupScrollSpy();
+  setView(currentView, document.getElementById('vt-' + currentView), false); // apply saved view
 }
 
 function renderCard(p) {
@@ -1156,14 +1560,30 @@ function renderCard(p) {
        </div>`
     : `<div class="price-value">${fmt(p.precio)}</div>`;
 
+  const fichaBtn = p.fichaUrl
+    ? `<a class="btn-ficha" href="${p.fichaUrl}" target="_blank" download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+        Descargar ficha técnica
+       </a>`
+    : '';
+
   return `<div class="card${p.novedad?' novelty':''}${tieneOferta?' on-offer':''}"
     data-id="${p.sku}" data-name="${p.nombre}" data-price="${precioActivo}"
     data-price-original="${p.precio}" data-emoji="${p.emoji}" data-img="${p.img}"
-    data-subcat="${p.subCategoria||''}">
+    data-subcat="${p.subCategoria||''}" data-ficha="${p.fichaUrl||''}"
+    data-variables="${p.variables.join('|')}">
     <div class="card-img-wrap">${imgHtml}<div class="card-sku-badge">${p.sku}</div></div>
     <div class="card-body">
       <div class="card-name">${p.nombre}</div>
+      <span class="card-sku-text">${p.sku}</span>
       ${p.subCategoria ? `<span class="card-subcat">${p.subCategoria}</span>` : ''}
+      ${p.variables.length ? `
+      <div class="size-selector">
+        <span class="size-label">Talla: <span class="selected-size-label">— elige una —</span></span>
+        <div class="size-pills">
+          ${p.variables.map(v => `<button class="size-pill" onclick="selectSize(this,'${v}')">${v}</button>`).join('')}
+        </div>
+      </div>` : ''}
       <div class="card-specs">${specs}</div>
       <div class="card-footer">
         <div class="card-footer-row1">
@@ -1178,6 +1598,7 @@ function renderCard(p) {
           </div>
         </div>
         <button class="btn-add" onclick="addToCart(this)"><span>🛒</span> Agregar al carrito</button>
+        ${fichaBtn}
       </div>
     </div>
   </div>`;
@@ -1296,12 +1717,13 @@ function onRUTInput(input) {
   const raw = input.value.replace(/[^0-9kK]/g, '').toUpperCase();
   if (raw.length > 1) {
     const body = raw.slice(0, -1);
-    const dv = raw.slice(-1);
+    const dv   = raw.slice(-1);
+    // Formatear de derecha a izquierda en grupos de 3 → 77.150.939
+    const rev  = body.split('').reverse();
     let formatted = '';
-    for (let i = 0; i < body.length; i++) {
-      const fromRight = body.length - 1 - i;
-      if (i > 0 && fromRight % 3 === 0 && fromRight > 0) formatted += '.';
-      formatted += body[i];
+    for (let i = 0; i < rev.length; i++) {
+      if (i > 0 && i % 3 === 0) formatted = '.' + formatted;
+      formatted = rev[i] + formatted;
     }
     input.value = formatted + '-' + dv;
   } else {
@@ -1349,23 +1771,58 @@ function changeQty(btn, delta) {
   const id = card.dataset.id;
   if (cart[id]) {
     if (v === 0) removeFromCart(id, card);
-    else { cart[id].qty = v; updateUI(); }
+    else { cart[id].qty = v; updateUI(); saveCart(); }
+  } else if (v === 1) {
+    // Auto-agregar cuando llega a 1 (útil en vista lista sin botón "Agregar")
+    const addBtn = card.querySelector('.btn-add');
+    if (addBtn) addToCart(addBtn);
+    else {
+      // Vista lista: btn-add oculto — agregar directamente
+      const { name, price, emoji, img } = { name: card.dataset.name, price: parseInt(card.dataset.price), emoji: card.dataset.emoji, img: card.dataset.img||'' };
+      cart[id] = { name, price, qty: 1, emoji, img };
+      valEl.textContent = 1;
+      valEl.className = 'qc-val nonzero';
+      updateUI(); saveCart();
+      showToast(`${emoji} ${name} agregado`);
+    }
   }
 }
 
 function addToCart(btn) {
   const card = getCard(btn);
-  const { id, name, price, emoji, img } = { id: card.dataset.id, name: card.dataset.name, price: parseInt(card.dataset.price), emoji: card.dataset.emoji, img: card.dataset.img || '' };
+  const { id, name, price, emoji, img } = {
+    id: card.dataset.id, name: card.dataset.name,
+    price: parseInt(card.dataset.price), emoji: card.dataset.emoji, img: card.dataset.img || ''
+  };
+
+  // Validar talla si el producto tiene variables
+  const variables = card.dataset.variables || '';
+  if (variables) {
+    const selectedPill = card.querySelector('.size-pill.selected');
+    if (!selectedPill) {
+      showToast('⚠️ Selecciona una talla antes de agregar');
+      card.querySelector('.size-pills').style.animation = 'none';
+      card.querySelector('.size-pills').offsetHeight; // reflow
+      card.querySelector('.size-pills').style.animation = 'shake .3s ease';
+      return;
+    }
+  }
+
+  const selectedSize = card.querySelector('.size-pill.selected')?.textContent || '';
+  // Clave única = SKU + talla (para permitir misma card con tallas distintas)
+  const cartKey = selectedSize ? `${id}-${selectedSize}` : id;
+  const displayName = selectedSize ? `${name} (${selectedSize})` : name;
+
   const qtyEl = card.querySelector('.qc-val');
   let qty = parseInt(qtyEl.textContent) || 1;
   qtyEl.textContent = qty;
   qtyEl.className = 'qc-val nonzero';
-  cart[id] = { name, price, qty, emoji, img };
+  cart[cartKey] = { name: displayName, price, qty, emoji, img, sku: id, size: selectedSize };
   btn.classList.add('in-cart');
-  btn.innerHTML = '<span>✓</span> En carrito';
+  btn.innerHTML = selectedSize ? `<span>✓</span> ${selectedSize} en carrito` : '<span>✓</span> En carrito';
   updateUI();
   saveCart();
-  showToast(`${emoji} ${name} agregado`);
+  showToast(`${emoji} ${displayName} agregado`);
 }
 
 function removeFromCart(id, card) {
@@ -1392,10 +1849,11 @@ function updateUI() {
   const netoBase  = ids.reduce((s,id) => s + cart[id].price * cart[id].qty, 0);
   const itemCount = ids.reduce((s,id) => s + cart[id].qty, 0);
 
-  // ── Cálculo del descuento por volumen
-  const hasDiscount = netoBase >= DISCOUNT_THRESHOLD;
-  const ahorro      = hasDiscount ? Math.round(netoBase * DISCOUNT_PCT) : 0;
-  const neto        = netoBase - ahorro;           // neto efectivo (con desc. si aplica)
+  // ── Descuento escalonado
+  const tier        = getActiveTier(netoBase);
+  const hasDiscount = !!tier;
+  const ahorro      = hasDiscount ? Math.round(netoBase * tier.pct) : 0;
+  const neto        = netoBase - ahorro;
   const iva         = Math.round(neto * 0.19);
   const bruto       = neto + iva;
 
@@ -1416,14 +1874,14 @@ function updateUI() {
     drawerSend.classList.remove('ready');
   } else if (netoBase >= MIN_ORDER) {
     msgEl.textContent = hasDiscount
-      ? `✓ ¡Descuento 10% activo! Ahorrando ${fmt(ahorro)}`
+      ? `✓ ¡${tier.label} activo! Ahorrando ${fmt(ahorro)}`
       : '✓ Pedido mínimo alcanzado — ¡puedes confirmar!';
     msgEl.className = 'progress-message ok';
     sendBtn.classList.add('ready');
     drawerSend.classList.add('ready');
     minAlert.className = 'min-order-alert reached';
     minAlert.innerHTML = hasDiscount
-      ? `🎉 ¡Descuento por volumen activo! Estás ahorrando <strong>${fmt(ahorro)}</strong>.`
+      ? `🎉 ¡Descuento ${tier.label} activo! Estás ahorrando <strong>${fmt(ahorro)}</strong>.`
       : '✅ ¡Pedido mínimo alcanzado! Puedes confirmar tu orden.';
   } else {
     const falta = MIN_ORDER - netoBase;
@@ -1444,14 +1902,19 @@ function updateUI() {
 
   const discRow      = document.getElementById('df-discount-row');
   const discNetoRow  = document.getElementById('df-neto-desc-row');
+  const savingRow    = document.getElementById('df-saving-row');
   if (hasDiscount) {
-    discRow.style.display = 'flex';
+    discRow.style.display   = 'flex';
     discNetoRow.style.display = 'flex';
-    document.getElementById('df-discount').textContent  = `−${fmt(ahorro)}`;
-    document.getElementById('df-neto-desc').textContent = fmt(neto);
+    savingRow.style.display  = 'flex';
+    document.getElementById('df-discount-label').textContent = `🎉 Descuento ${tier.label} activo`;
+    document.getElementById('df-discount').textContent       = `−${fmt(ahorro)}`;
+    document.getElementById('df-neto-desc').textContent      = fmt(neto);
+    document.getElementById('df-saving-msg').textContent     = `🎉 Estás ahorrando ${fmt(ahorro)} en esta compra`;
   } else {
-    discRow.style.display = 'none';
-    discNetoRow.style.display = 'none';
+    discRow.style.display    = 'none';
+    discNetoRow.style.display= 'none';
+    savingRow.style.display  = 'none';
   }
   document.getElementById('df-iva').textContent   = fmt(iva);
   document.getElementById('df-total').textContent = fmt(bruto);
@@ -1472,69 +1935,92 @@ function updateUI() {
 }
 
 /* ═══════════════════════════════════════════
-   BARRA DUAL — lógica en 3 fases
+   HELPER: Tramo de descuento activo
    ═══════════════════════════════════════════ */
-let _wasDiscountActive = false;
+function getActiveTier(netoBase) {
+  // Devuelve el tier activo o null
+  let active = null;
+  for (const t of DISCOUNT_TIERS) {
+    if (netoBase >= t.threshold) active = t;
+  }
+  return active;
+}
+function getNextTier(netoBase) {
+  for (const t of DISCOUNT_TIERS) {
+    if (netoBase < t.threshold) return t;
+  }
+  return null;
+}
+/* ═══════════════════════════════════════════
+   BARRA ESCALONADA — 5 fases / 3 tramos
+   ═══════════════════════════════════════════ */
+let _lastTierPct = 0;
 
 function updateDualBar(netoBase, ahorro, hasDiscount) {
-  const bar      = document.getElementById('order-progress-bar');
-  const fill     = document.getElementById('opb-fill');
-  const label    = document.getElementById('opb-label');
-  const badge    = document.getElementById('opb-badge');
-  const badgeAmt = document.getElementById('opb-saving-amt');
-  const milestone= document.getElementById('opb-milestone');
+  const bar   = document.getElementById('order-progress-bar');
+  const fill  = document.getElementById('opb-fill');
+  const label = document.getElementById('opb-label');
+  const badge = document.getElementById('opb-badge');
+  const maxT  = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold;
 
-  // Posición del marcador de mínimo (% dentro de la pista total = THRESHOLD)
-  const milestonePos = (MIN_ORDER / DISCOUNT_THRESHOLD) * 100;
-  milestone.style.left = milestonePos.toFixed(2) + '%';
+  // Posicionar marcadores
+  [MIN_ORDER, DISCOUNT_TIERS[0].threshold, DISCOUNT_TIERS[1].threshold].forEach((val, i) => {
+    const el = document.getElementById('opb-m' + i);
+    if (el) el.style.left = Math.min((val / maxT) * 100, 99).toFixed(2) + '%';
+  });
 
-  const pct = Math.min((netoBase / DISCOUNT_THRESHOLD) * 100, 100);
-  fill.style.width = pct + '%';
+  fill.style.width = Math.min((netoBase / maxT) * 100, 100).toFixed(2) + '%';
+
+  const tier     = getActiveTier(netoBase);
+  const nextTier = getNextTier(netoBase);
+  const tierPct  = tier ? tier.pct : 0;
+  if (tierPct > _lastTierPct) { launchConfetti(); _lastTierPct = tierPct; }
+  if (tierPct < _lastTierPct)   _lastTierPct = tierPct;
 
   if (netoBase === 0) {
-    // Fase 0: vacío
     bar.classList.remove('phase-discount');
     fill.className = 'opb-fill phase-min';
     label.className = 'opb-label';
-    label.innerHTML = `Agrega productos — mínimo <strong>${fmt(MIN_ORDER)}</strong> neto`;
-    badge.classList.remove('show');
+    label.innerHTML = 'Agrega productos — mínimo <strong>' + fmt(MIN_ORDER) + '</strong> neto';
 
   } else if (netoBase < MIN_ORDER) {
-    // Fase 1: antes del mínimo
     bar.classList.remove('phase-discount');
     fill.className = 'opb-fill phase-min';
     label.className = 'opb-label';
-    const faltaMin = MIN_ORDER - netoBase;
-    label.innerHTML = `Te faltan <strong>${fmt(faltaMin)}</strong> para el mínimo · ${fmt(DISCOUNT_THRESHOLD - netoBase)} para el descuento 10%`;
-    badge.classList.remove('show');
+    label.innerHTML = 'Te faltan <strong>' + fmt(MIN_ORDER - netoBase) + '</strong> para el mínimo · '
+      + fmt(DISCOUNT_TIERS[0].threshold - netoBase) + ' para el primer descuento 5%';
 
-  } else if (netoBase < DISCOUNT_THRESHOLD) {
-    // Fase 2: sobre el mínimo, camino al descuento
+  } else if (!tier) {
     bar.classList.remove('phase-discount');
-    fill.className = 'opb-fill phase-disc';
+    fill.className = 'opb-fill phase-t1';
     label.className = 'opb-label';
-    const faltaDesc = DISCOUNT_THRESHOLD - netoBase;
-    label.innerHTML = `✓ Mínimo OK · Te faltan <strong>${fmt(faltaDesc)}</strong> para ahorrar <strong>10%</strong> (${fmt(netoBase * DISCOUNT_PCT)})`;
-    badge.classList.remove('show');
+    label.innerHTML = '✓ Mínimo OK · Te faltan <strong>' + fmt(nextTier.threshold - netoBase)
+      + '</strong> para ahorrar <strong>' + nextTier.label + '</strong> ('
+      + fmt(Math.round(netoBase * nextTier.pct)) + ')';
+
+  } else if (tier.pct === 0.05) {
+    bar.classList.add('phase-discount');
+    fill.className = 'opb-fill phase-t1';
+    label.className = 'opb-label saving-5';
+    label.innerHTML = '💙 Descuento <strong>' + tier.label + '</strong> activo · '
+      + '🎉 Estás ahorrando <strong>' + fmt(ahorro) + '</strong>'
+      + (nextTier ? ' · Faltan <strong>' + fmt(nextTier.threshold - netoBase) + '</strong> para ' + nextTier.label : '');
+
+  } else if (tier.pct === 0.07) {
+    bar.classList.add('phase-discount');
+    fill.className = 'opb-fill phase-t2';
+    label.className = 'opb-label saving-7';
+    label.innerHTML = '🌿 Descuento <strong>' + tier.label + '</strong> activo · '
+      + '🎉 Estás ahorrando <strong>' + fmt(ahorro) + '</strong>'
+      + (nextTier ? ' · Faltan <strong>' + fmt(nextTier.threshold - netoBase) + '</strong> para ' + nextTier.label : '');
 
   } else {
-    // Fase 3: descuento activo 🎉
     bar.classList.add('phase-discount');
-    fill.className = 'opb-fill phase-full';
+    fill.className = 'opb-fill phase-t3';
     label.className = 'opb-label saving';
-    label.innerHTML = `🎉 ¡Descuento 10% activo! Estás ahorrando en esta compra`;
-    badgeAmt.textContent = fmt(ahorro);
-    badge.classList.add('show');
-
-    // Disparar confeti solo la primera vez que se activa
-    if (!_wasDiscountActive) {
-      launchConfetti();
-      _wasDiscountActive = true;
-    }
+    label.innerHTML = '🎉 Estás ahorrando <strong>' + fmt(ahorro) + '</strong> con el descuento máximo <strong>' + tier.label + '</strong>!';
   }
-
-  // Reset flag si baja del umbral
-  if (netoBase < DISCOUNT_THRESHOLD) _wasDiscountActive = false;
+  if (badge) badge.classList.remove('show');
 }
 
 /* Confeti */
@@ -1861,8 +2347,9 @@ function openFormModal() {
   if (getTotal() < MIN_ORDER) return;
   const ids      = Object.keys(cart);
   const netoBase = getTotal();
-  const hasDiscount = netoBase >= DISCOUNT_THRESHOLD;
-  const ahorro   = hasDiscount ? Math.round(netoBase * DISCOUNT_PCT) : 0;
+  const tier     = getActiveTier(netoBase);
+  const hasDiscount = !!tier;
+  const ahorro   = hasDiscount ? Math.round(netoBase * tier.pct) : 0;
   const neto     = netoBase - ahorro;
   const iva      = Math.round(neto * 0.19);
   const bruto    = neto + iva;
@@ -1878,6 +2365,7 @@ function openFormModal() {
   if (hasDiscount) {
     mdr.style.display  = 'flex';
     mndr.style.display = 'flex';
+    document.getElementById('modal-discount-label').textContent = `🎉 Descuento ${tier.label} activo`;
     document.getElementById('modal-discount-val').textContent  = '-' + fmt(ahorro);
     document.getElementById('modal-neto-desc-val').textContent = fmt(neto);
   } else {
@@ -1887,30 +2375,122 @@ function openFormModal() {
   document.getElementById('modal-iva-val').textContent   = fmt(iva);
   document.getElementById('modal-total-val').textContent = fmt(bruto);
 
+  // ── Pre-rellenar datos guardados del cliente
+  prefillClientData();
+
   document.getElementById('form-modal').classList.add('open');
   closeDrawer();
 }
 
 function closeFormModal() { document.getElementById('form-modal').classList.remove('open'); }
 
+/* ═══════════════════════════════════════════
+   DATOS GUARDADOS DEL CLIENTE
+   ═══════════════════════════════════════════ */
+const CLIENT_KEY = 'bm_client_data_v1';
+
+function saveClientData(d) {
+  try {
+    localStorage.setItem(CLIENT_KEY, JSON.stringify({
+      razonSocial: d.razonSocial,
+      rut:         d.rut,
+      giro:        d.giro,
+      email:       d.email,
+      telefono:    d.telefono.replace('+56 ',''), // guardar sin prefijo
+      dirFiscal:   d.dirFiscal,
+      dirDespacho: d.dirDespacho,
+    }));
+  } catch(e) {}
+}
+
+function prefillClientData() {
+  try {
+    const saved = localStorage.getItem(CLIENT_KEY);
+    if (!saved) return;
+    const d = JSON.parse(saved);
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    set('f-razon',       d.razonSocial);
+    set('f-giro',        d.giro);
+    set('f-email',       d.email);
+    set('f-dir-fiscal',  d.dirFiscal);
+    set('f-dir-despacho',d.dirDespacho);
+    // RUT: disparar el formateador
+    if (d.rut) {
+      const rutEl = document.getElementById('f-rut');
+      rutEl.value = d.rut.replace(/[^0-9kK]/g,'');
+      onRUTInput(rutEl);
+    }
+    // Teléfono: disparar el formateador
+    if (d.telefono) {
+      const telEl = document.getElementById('f-tel');
+      telEl.value = d.telefono.replace(/\D/g,'').slice(0,9);
+      onPhoneInput(telEl);
+    }
+    // Mostrar banner
+    const banner = document.getElementById('saved-data-banner');
+    const nameEl = document.getElementById('sdb-name');
+    if (banner && nameEl) {
+      nameEl.textContent = d.razonSocial;
+      banner.classList.add('show');
+    }
+  } catch(e) {}
+}
+
+function clearSavedData() {
+  try { localStorage.removeItem(CLIENT_KEY); } catch(e) {}
+  document.getElementById('saved-data-banner').classList.remove('show');
+  ['f-razon','f-rut','f-giro','f-email','f-tel','f-dir-fiscal','f-dir-despacho'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value = ''; el.className = ''; }
+  });
+  document.getElementById('rut-hint').textContent = '';
+  document.getElementById('phone-hint').textContent = 'Ingresa los 9 dígitos de tu celular';
+  document.getElementById('phone-wrap').className = 'phone-input-wrap';
+  showToast('🗑️ Datos guardados eliminados');
+}
+
+/* ═══════════════════════════════════════════
+   SELECTOR DE VISTA DEL CATÁLOGO
+   ═══════════════════════════════════════════ */
+let currentView = parseInt(localStorage.getItem('bm_view') || '3');
+
+function initView() {
+  setView(currentView, document.getElementById('vt-' + currentView), false);
+}
+
+function setView(n, btn, save = true) {
+  currentView = n;
+  if (save) { try { localStorage.setItem('bm_view', n); } catch(e) {} }
+  // Update buttons
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Update all grids
+  document.querySelectorAll('.grid').forEach(g => {
+    g.classList.remove('view-2','view-list');
+    if (n === 2) g.classList.add('view-2');
+    if (n === 1) g.classList.add('view-list');
+  });
+}
+
 
 
 /* ═══════════════════════════════════════════
    ENVÍO DIRECTO A WHATSAPP
    ═══════════════════════════════════════════ */
-function submitOrder() {
+async function submitOrder() {
   if (!validateForm()) return;
 
   const btn = document.getElementById('btn-send-wa');
   btn.classList.add('loading');
 
-  const netoBase = getTotal();
-  const hasDiscount = netoBase >= DISCOUNT_THRESHOLD;
-  const ahorro   = hasDiscount ? Math.round(netoBase * DISCOUNT_PCT) : 0;
-  const neto     = netoBase - ahorro;
-  const iva      = Math.round(neto * 0.19);
-  const bruto    = neto + iva;
-  const now   = new Date();
+  const netoBase    = getTotal();
+  const tier        = getActiveTier(netoBase);
+  const hasDiscount = !!tier;
+  const ahorro      = hasDiscount ? Math.round(netoBase * tier.pct) : 0;
+  const neto        = netoBase - ahorro;
+  const iva         = Math.round(neto * 0.19);
+  const bruto       = neto + iva;
+  const now         = new Date();
   quoteNumber = `BOT-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(Date.now()).slice(-4)}`;
 
   orderData = {
@@ -1928,51 +2508,150 @@ function submitOrder() {
     items: Object.keys(cart).map(id => ({ sku: id, ...cart[id] })),
   };
 
-  // Captura de lead async
+  // ── 1. Guardar lead y datos del cliente
   if (LEADS_ENDPOINT) captureLeadAsync(orderData);
+  saveClientData(orderData);
 
-  // Abrir WhatsApp
-  const lines = orderData.items.map(i =>
-    `• [${i.sku}] ${i.name} × ${i.qty} = ${fmt(i.price * i.qty)}`
-  ).join('\n');
+  // ── 2. Cerrar form y limpiar carrito
+  btn.classList.remove('loading');
+  closeFormModal();
+  clearCart();
 
+  // ── 3. Mostrar modal de éxito
+  document.getElementById('sr-quote-num').textContent = quoteNumber;
+  document.getElementById('sr-email-status').textContent = '📧 Enviando confirmación por correo…';
+  document.getElementById('order-success-modal').classList.add('open');
+
+  // ── 4. Enviar correo automático vía EmailJS
+  sendEmailJS(orderData);
+}
+
+/* ─ Poblar modal de éxito con datos del pedido ─ */
+function populateSuccessModal(d) {
+  document.getElementById('sr-quote-num').textContent  = d.quoteNumber;
+  document.getElementById('sr-empresa').textContent    = d.razonSocial;
+  document.getElementById('sr-rut').textContent        = d.rut;
+  document.getElementById('sr-correo').textContent     = d.email;
+  document.getElementById('sr-telefono').textContent   = d.telefono;
+  document.getElementById('sr-despacho').textContent   = d.dirDespacho;
+  document.getElementById('sr-neto').textContent       = fmt(d.netoBase);
+  document.getElementById('sr-iva').textContent        = fmt(d.iva);
+  document.getElementById('sr-total').textContent      = fmt(d.bruto);
+
+  const descRow = document.getElementById('sr-desc-row');
+  if (d.hasDiscount) {
+    descRow.style.display = 'flex';
+    document.getElementById('sr-desc').textContent = `−${fmt(d.ahorro)}`;
+  } else {
+    descRow.style.display = 'none';
+  }
+
+  document.getElementById('sr-items').innerHTML = d.items.map(i =>
+    `<div class="sr-line"><span>${i.emoji} ${i.name} ×${i.qty}</span><span>${fmt(i.price*i.qty)}</span></div>`
+  ).join('');
+}
+
+/* ─ Botón WhatsApp dentro del modal de éxito ─ */
+function sendSuccessWA() {
+  const d = orderData;
+  const lines = d.items.map(i => `• [${i.sku}] ${i.name} × ${i.qty} = ${fmt(i.price*i.qty)}`).join('\n');
   const msg =
 `🏥 *Boticamed — Pedido Mayorista*
-📋 Ref. ${orderData.quoteNumber}
+📋 Ref. ${d.quoteNumber}
 
 *DATOS DEL CLIENTE:*
-🏢 Razón Social: ${orderData.razonSocial}
-🪪 RUT: ${orderData.rut}
-📌 Giro: ${orderData.giro}
-📧 Correo: ${orderData.email}
-📞 Tel: ${orderData.telefono}
-📍 Dir. Fiscal: ${orderData.dirFiscal}
-🚚 Dir. Despacho: ${orderData.dirDespacho}
+🏢 ${d.razonSocial}  |  🪪 RUT: ${d.rut}
+📌 Giro: ${d.giro}
+📧 ${d.email}  |  📞 ${d.telefono}
+📍 Fiscal: ${d.dirFiscal}
+🚚 Despacho: ${d.dirDespacho}
 
-*DETALLE DEL PEDIDO:*
+*PRODUCTOS:*
 ${lines}
 
 *VALORES:*
-🔹 Subtotal Neto:       ${fmt(orderData.netoBase)}${orderData.hasDiscount ? `
-🎉 Descuento 10% vol.: −${fmt(orderData.ahorro)}
-✅ Neto con descuento:  ${fmt(orderData.neto)}` : ''}
-🔹 IVA (19%):          ${fmt(orderData.iva)}
-💰 *TOTAL CON IVA: ${fmt(orderData.bruto)}*
-${orderData.notas ? `\n📝 Notas: ${orderData.notas}` : ''}
+🔹 Subtotal Neto: ${fmt(d.netoBase)}${d.hasDiscount ? `\n🎉 Descuento 10%: −${fmt(d.ahorro)}\n✅ Neto c/desc: ${fmt(d.neto)}` : ''}
+🔹 IVA (19%): ${fmt(d.iva)}
+💰 *TOTAL: ${fmt(d.bruto)}*
+${d.notas ? `\n📝 ${d.notas}` : ''}
 
-*CONDICIONES COMERCIALES:*
 📦 Entrega: ${CONDITIONS.entrega}
-💳 Pago: ${CONDITIONS.pago}
-⏱ Vigencia precio: ${CONDITIONS.vigencia}`;
+💳 Pago: ${CONDITIONS.pago}`;
 
-  setTimeout(() => {
-    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
-    btn.classList.remove('loading');
-    closeFormModal();
-    clearCart();
-    showToast('✅ ¡Pedido enviado por WhatsApp!');
-  }, 300);
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
 }
+
+/* ─ Imprimir / guardar recibo ─ */
+function printReceipt() {
+  window.print();
+}
+
+/* ─ Cerrar modal de éxito ─ */
+function closeSuccessModal() {
+  document.getElementById('order-success-modal').classList.remove('open');
+  orderData = {};
+  quoteNumber = '';
+}
+
+/* ─ Envío automático de correo vía EmailJS ─ */
+async function sendEmailJS(d) {
+  const statusEl = document.getElementById('sr-email-status');
+  if (!EMAILJS_PUBLIC_KEY || EMAILJS_PUBLIC_KEY === 'TU_PUBLIC_KEY') {
+    if (statusEl) statusEl.textContent = '⚙️ EmailJS no configurado aún — el correo automático está pendiente.';
+    return;
+  }
+
+  const itemsText = d.items.map(i =>
+    `[${i.sku}] ${i.name} ×${i.qty} = ${fmt(i.price*i.qty)}`
+  ).join('\n');
+
+  const descuento = d.hasDiscount
+    ? `\nDescuento 10% vol.: −${fmt(d.ahorro)}\nNeto con descuento: ${fmt(d.neto)}`
+    : '';
+
+  const templateParams = {
+    quote:        d.quoteNumber,
+    empresa:      d.razonSocial,
+    rut:          d.rut,
+    giro:         d.giro,
+    email_cliente:d.email,
+    telefono:     d.telefono,
+    dir_fiscal:   d.dirFiscal,
+    dir_despacho: d.dirDespacho,
+    notas:        d.notas || '—',
+    detalle:      itemsText,
+    subtotal:     fmt(d.netoBase),
+    descuento:    descuento,
+    iva:          fmt(d.iva),
+    total:        fmt(d.bruto),
+    entrega:      CONDITIONS.entrega,
+    pago:         CONDITIONS.pago,
+    vigencia:     CONDITIONS.vigencia,
+    marketing:    d.marketing ? 'Sí ✅' : 'No',
+  };
+
+  try {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+    if (statusEl) statusEl.innerHTML = '✅ <strong>Correo enviado</strong> a bsilva@boticamed.cl';
+  } catch(err) {
+    console.error('EmailJS error:', err);
+    if (statusEl) statusEl.textContent = '⚠️ Error enviando correo. Usa el botón de WhatsApp.';
+  }
+}
+
+/* ─ Burbuja flotante WhatsApp consultas ─ */
+function openWAConsult() {
+  const items = Object.keys(cart);
+  let msg = '¡Hola Boticamed! Quisiera hacer una consulta sobre el catálogo. ';
+  if (items.length > 0) {
+    const prod = items.map(id => `${cart[id].name} (${cart[id].qty})`).join(', ');
+    msg = `¡Hola Boticamed! Tengo una consulta sobre mi pedido:\n\n📦 Productos en carrito: ${prod}\n\nMi consulta es: `;
+  }
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// WA Consult function defined above in submitOrder section
 
 /* ═══════════════════════════════════════════
    LEAD CAPTURE (async, no bloquea)
@@ -2024,8 +2703,54 @@ function setupScrollSpy() {
 }
 
 /* ═══════════════════════════════════════════
-   UTILS
+   SELECTOR DE TALLAS
    ═══════════════════════════════════════════ */
+function selectSize(pill, size) {
+  const card = getCard(pill);
+  // Deseleccionar otras pills de esta card
+  card.querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'));
+  pill.classList.add('selected');
+  // Actualizar label
+  const lbl = card.querySelector('.selected-size-label');
+  if (lbl) lbl.textContent = size;
+  // Si el producto ya estaba en carrito con otra talla, actualizar
+  const id = card.dataset.id;
+  const btn = card.querySelector('.btn-add');
+  if (btn && btn.classList.contains('in-cart')) {
+    // Resetear para que el cliente confirme la nueva talla
+    btn.classList.remove('in-cart');
+    btn.innerHTML = '<span>🛒</span> Agregar al carrito';
+    // Remover entrada anterior del carrito
+    Object.keys(cart).forEach(k => { if (k.startsWith(id + '-') || k === id) delete cart[k]; });
+    const qtyEl = card.querySelector('.qc-val');
+    qtyEl.textContent = '0'; qtyEl.className = 'qc-val';
+    updateUI(); saveCart();
+  }
+}
+function toggleCatDropdown() {
+  const menu = document.getElementById('cat-dropdown-menu');
+  menu.classList.toggle('open');
+}
+
+function selectCatDropdown(sectionId, catName, btn) {
+  // Scroll a la sección
+  const el = document.getElementById(sectionId);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Actualizar estado activo en el dropdown
+  document.querySelectorAll('.cat-drop-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Actualizar label del botón
+  document.getElementById('cat-dropdown-label').textContent = catName;
+  // Cerrar el dropdown
+  document.getElementById('cat-dropdown-menu').classList.remove('open');
+}
+
+// Cerrar dropdown al hacer clic fuera
+document.addEventListener('click', e => {
+  if (!e.target.closest('#cat-dropdown-btn') && !e.target.closest('#cat-dropdown-menu')) {
+    document.getElementById('cat-dropdown-menu')?.classList.remove('open');
+  }
+});
 const fmt = n => '$' + Math.round(n).toLocaleString('es-CL');
 const getTotal = () => Object.keys(cart).reduce((s,id) => s + cart[id].price * cart[id].qty, 0);
 const slugify = str => str.toLowerCase().replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u').replace(/ñ/g,'n').replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
