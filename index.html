@@ -67,7 +67,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 #cart-bar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--blue-deep); padding: 0 32px; height: 60px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 24px rgba(0,0,0,0.3); }
 .cart-bar-left { display: flex; align-items: center; gap: 16px; }
 .cart-logo { display: flex; align-items: center; gap: 10px; }
-.cart-logo img { height: 32px; width: auto; object-fit: contain; filter: brightness(0) invert(1); }
+.cart-logo img { display: none; }
 .cart-logo span { font-family: 'DM Serif Display', serif; font-size: 18px; color: white; letter-spacing: .5px; }
 .cart-divider { width: 1px; height: 20px; background: rgba(255,255,255,.2); }
 .cart-items-count { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.6); }
@@ -287,7 +287,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 65% 80% at 80% 50%, rgba(0,98,204,.3) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 5% 80%, rgba(0,158,94,.12) 0%, transparent 60%); }
 .hero::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 0); background-size: 24px 24px; }
 .hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 52px 40px 44px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
-.hero-logo { height: 44px; width: auto; object-fit: contain; margin-bottom: 20px; filter: brightness(0) invert(1); }
+.hero-logo { display: none; }
 .brand-tag { display: inline-block; background: rgba(0,158,94,.18); border: 1px solid rgba(0,158,94,.4); color: #6ee7b7; font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; }
 .hero h1 { font-family: 'DM Serif Display', serif; font-size: 44px; color: #fff; line-height: 1.08; letter-spacing: -.5px; }
 .hero h1 em { font-style: italic; color: rgba(255,255,255,.4); }
@@ -1042,6 +1042,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   </div>
   <div class="drawer-footer">
     <div class="df-row"><span>Productos</span><span id="df-count">0 unidades</span></div>
+    <div id="df-offer-note" style="display:none;font-size:10.5px;color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:7px;padding:6px 10px;margin:4px 0;">
+      🏷️ Los productos en oferta no acumulan descuento por volumen.
+    </div>
     <div class="df-row subtotal-neto"><span>Subtotal Neto</span><span id="df-neto">$0</span></div>
     <div class="df-row" id="df-discount-row" style="display:none;color:#15803d;font-weight:600;">
       <span id="df-discount-label">🎉 Descuento activo</span><span id="df-discount" style="color:#dc2626;">−$0</span>
@@ -1111,7 +1114,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
         <div class="form-grid">
           <div class="form-group">
             <label>Razón Social <span class="required">*</span></label>
-            <input type="text" id="f-razon" placeholder="Ej: Sinergia Trade Chile SpA" required>
+            <input type="text" id="f-razon" placeholder="Ej: Empresa Ltda. o SpA" required>
           </div>
           <div class="form-group">
             <label>RUT <span class="required">*</span></label>
@@ -1120,11 +1123,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
           </div>
           <div class="form-group">
             <label>Giro Comercial <span class="required">*</span></label>
-            <input type="text" id="f-giro" placeholder="Ej: Comercio al por mayor de artículos médicos" required>
+            <input type="text" id="f-giro" placeholder="Ej: Venta al por mayor de artículos" required>
           </div>
           <div class="form-group">
             <label>Correo Electrónico <span class="required">*</span></label>
-            <input type="email" id="f-email" placeholder="ventas@empresa.cl" required>
+            <input type="email" id="f-email" placeholder="correo@empresa.cl" required>
           </div>
           <div class="form-group">
             <label>Teléfono <span class="required">*</span></label>
@@ -1143,7 +1146,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
         <div class="form-grid full">
           <div class="form-group">
             <label>Dirección Fiscal <span class="required">*</span></label>
-            <input type="text" id="f-dir-fiscal" placeholder="Ej: Av. Providencia 1234, Of. 502, Santiago" required>
+            <input type="text" id="f-dir-fiscal" placeholder="Calle, número, oficina/piso, comuna" required>
           </div>
         </div>
       </div>
@@ -1154,11 +1157,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
         <div class="form-grid full">
           <div class="form-group">
             <label>Dirección de Despacho <span class="required">*</span></label>
-            <input type="text" id="f-dir-despacho" placeholder="Ej: Bodega Norte, Camino Lo Boza 1305, Pudahuel" required>
+            <input type="text" id="f-dir-despacho" placeholder="Calle, número, bodega/local, comuna" required>
           </div>
           <div class="form-group" style="margin-top:8px;">
             <label>Notas de Despacho</label>
-            <textarea id="f-notas" rows="2" placeholder="Ej: Entrada por portón lateral, preguntar por bodega 3. Urgente. Necesito factura."></textarea>
+            <textarea id="f-notas" rows="2" placeholder="Instrucciones de entrega, horario, contacto en bodega, si necesita factura, etc."></textarea>
           </div>
         </div>
       </div>
@@ -2158,12 +2161,13 @@ function addToCart(btn) {
   // Clave única = SKU + talla (para permitir misma card con tallas distintas)
   const cartKey = selectedSize ? `${id}-${selectedSize}` : id;
   const displayName = selectedSize ? `${name} (${selectedSize})` : name;
+  const isOffer = card.dataset.priceOriginal && parseInt(card.dataset.price) < parseInt(card.dataset.priceOriginal);
 
   const qtyEl = card.querySelector('.qc-val');
   let qty = parseInt(qtyEl.textContent) || 1;
   qtyEl.textContent = qty;
   qtyEl.className = 'qc-val nonzero';
-  cart[cartKey] = { name: displayName, price, qty, emoji, img, sku: id, size: selectedSize };
+  cart[cartKey] = { name: displayName, price, qty, emoji, img, sku: id, size: selectedSize, isOffer: !!isOffer };
   btn.classList.add('in-cart');
   btn.innerHTML = selectedSize ? `<span>✓</span> ${selectedSize} en carrito` : '<span>✓</span> En carrito';
   updateUI();
@@ -2193,12 +2197,16 @@ function clearCart() {
 function updateUI() {
   const ids = Object.keys(cart);
   const netoBase  = ids.reduce((s,id) => s + cart[id].price * cart[id].qty, 0);
+  // Solo productos SIN oferta cuentan para el descuento por volumen
+  const netoParaDescuento = ids.reduce((s,id) => {
+    return s + (cart[id].isOffer ? 0 : cart[id].price * cart[id].qty);
+  }, 0);
   const itemCount = ids.reduce((s,id) => s + cart[id].qty, 0);
 
-  // ── Descuento escalonado
-  const tier        = getActiveTier(netoBase);
+  // ── Descuento escalonado (solo sobre productos sin oferta)
+  const tier        = getActiveTier(netoParaDescuento);
   const hasDiscount = !!tier;
-  const ahorro      = hasDiscount ? Math.round(netoBase * tier.pct) : 0;
+  const ahorro      = hasDiscount ? Math.round(netoParaDescuento * tier.pct) : 0;
   const neto        = netoBase - ahorro;
   const iva         = Math.round(neto * 0.19);
   const bruto       = neto + iva;
@@ -2240,11 +2248,16 @@ function updateUI() {
   }
 
   // ── Barra dual bajo el header
-  updateDualBar(netoBase, ahorro, hasDiscount);
+  updateDualBar(netoParaDescuento, ahorro, hasDiscount);
 
   // ── Drawer footer
   document.getElementById('df-count').textContent = `${itemCount} unidad${itemCount!==1?'es':''}`;
   document.getElementById('df-neto').textContent  = fmt(netoBase);
+
+  // Nota si hay productos en oferta excluidos del descuento
+  const hasOfferItems = ids.some(id => cart[id].isOffer);
+  const offerNote = document.getElementById('df-offer-note');
+  if (offerNote) offerNote.style.display = hasOfferItems ? 'block' : 'none';
 
   const discRow      = document.getElementById('df-discount-row');
   const discNetoRow  = document.getElementById('df-neto-desc-row');
