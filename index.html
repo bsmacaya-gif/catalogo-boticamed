@@ -455,7 +455,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   #btn-send-order { padding: 7px 9px; font-size: 10.5px; }
 }
 
-/* ── BOTÓN WHATSAPP EN FOOTER ── */
+/* Vista lista: precio oferta en línea horizontal */
+.grid.view-list .price-offer-wrap { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px; }
+.grid.view-list .price-offer-badge { margin-bottom: 0; font-size: 8px; padding: 1px 5px; }
+.grid.view-list .price-original-old { font-size: 11px; }
+.grid.view-list .price-value.offer { font-size: 16px; width: 100%; }
 .footer-wa-btn {
   display: inline-flex; align-items: center; gap: 9px;
   background: var(--wa-green); color: white;
@@ -670,15 +674,44 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   20%,60%  { transform: translateX(-4px); }
   40%,80%  { transform: translateX(4px); }
 }
+.ofertas-carousel-outer {
+  position: relative;
+}
+/* Flechas navegación */
+.carousel-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: white; border: 1.5px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,44,107,.15);
+  cursor: pointer; font-size: 18px; font-weight: 700;
+  display: none; align-items: center; justify-content: center;
+  z-index: 10; color: var(--blue-deep); transition: all .2s;
+  user-select: none;
+}
+.carousel-arrow:hover { background: var(--blue); color: white; border-color: var(--blue); }
+.carousel-arrow.left { left: -18px; }
+.carousel-arrow.right { right: -18px; }
+@media (min-width: 701px) {
+  .carousel-arrow { display: flex; }
+}
 .ofertas-carousel {
   display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
   padding: 4px 2px 16px; scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
 }
 .ofertas-carousel::-webkit-scrollbar { display: none; }
 .ofertas-carousel .card {
   flex: 0 0 270px; scroll-snap-align: start; min-width: 0;
 }
+/* Botón ver todas las ofertas */
+.btn-ver-ofertas {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 14px; padding: 9px 20px;
+  background: white; border: 1.5px solid #dc2626; border-radius: 30px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700;
+  color: #dc2626; cursor: pointer; transition: all .2s;
+}
+.btn-ver-ofertas:hover { background: #dc2626; color: white; }
 @media (max-width: 700px) {
   /* Extender carrusel de borde a borde en móvil */
   #section-ofertas > div {
@@ -749,7 +782,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 /* ── VISTAS DE GRID ── */
 .grid.view-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
 .grid.view-list { grid-template-columns: 1fr; }
-.grid.view-list .card { flex-direction: row; min-height: 120px; max-height: 150px; }
+.grid.view-list .card { flex-direction: row; min-height: 120px; max-height: none; }
+.grid.view-list .card:has(.size-selector) { min-height: 160px; }
 .grid.view-list .card-img-wrap { width: 130px; min-width: 130px; aspect-ratio: auto; height: auto; border-radius: 12px 0 0 12px; }
 .grid.view-list .card-body { padding: 16px 20px; justify-content: center; gap: 2px; }
 .grid.view-list .card-name { font-size: 14px; margin-bottom: 2px; }
@@ -1276,8 +1310,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
         <p>Precios especiales · Solo por tiempo limitado · Stock sujeto a disponibilidad</p>
       </div>
     </div>
-    <div class="ofertas-carousel-wrap" style="padding:16px 20px 20px;background:#fff5f5;border:1.5px solid #fecaca;border-top:none;border-radius:0 0 16px 16px;">
-      <div class="ofertas-carousel" id="ofertas-grid"></div>
+    <div class="ofertas-carousel-wrap" style="padding:16px 28px 20px;background:#fff5f5;border:1.5px solid #fecaca;border-top:none;border-radius:0 0 16px 16px;">
+      <div class="ofertas-carousel-outer">
+        <button class="carousel-arrow left" onclick="scrollCarrusel(-1)">‹</button>
+        <div class="ofertas-carousel" id="ofertas-grid"></div>
+        <button class="carousel-arrow right" onclick="scrollCarrusel(1)">›</button>
+      </div>
+      <div style="text-align:center;">
+        <button class="btn-ver-ofertas" onclick="verTodasOfertas()">
+          🔥 Ver todas las ofertas
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -3230,6 +3273,29 @@ function copyShareLink() {
 }
 
 /* ── SECCIÓN OFERTAS DEL MES ── */
+/* ── Carrusel de ofertas: navegación con flechas ── */
+function scrollCarrusel(dir) {
+  const carousel = document.getElementById('ofertas-grid');
+  if (!carousel) return;
+  const cardWidth = carousel.querySelector('.card')?.offsetWidth || 286;
+  carousel.scrollBy({ left: dir * (cardWidth + 16), behavior: 'smooth' });
+}
+
+/* ── Ver todas las ofertas ── */
+function verTodasOfertas() {
+  document.querySelectorAll('.card').forEach(c => {
+    c.toggleAttribute('data-hidden', !c.classList.contains('on-offer'));
+  });
+  document.querySelectorAll('.section').forEach(s => {
+    const visible = s.querySelectorAll('.card:not([data-hidden])').length;
+    s.toggleAttribute('data-hidden', visible === 0);
+  });
+  showSubcatFilterBar('🔥 Ofertas del Mes');
+  setTimeout(() => {
+    document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
 function renderOfertasSection(products) {
   const enOferta = products.filter(p => p.precioOferta > 0 && p.precioOferta < p.precio);
   const seccion = document.getElementById('section-ofertas');
