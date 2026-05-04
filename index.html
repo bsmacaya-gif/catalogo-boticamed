@@ -367,7 +367,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .btn-add.in-cart { background: var(--green-light); color: var(--green-hover); border: 1.5px solid rgba(0,158,94,.35); }
 .btn-add.in-cart:hover { background: #d1fae5; }
 
-/* ── PRECIO OFERTA en card ── */
+/* ── PRECIO CON DESCUENTO POR VOLUMEN EN CARDS ── */
+.price-tier-wrap { display: flex; flex-direction: column; gap: 1px; }
+.price-tier-original { font-size: 12px; color: var(--muted); text-decoration: line-through; font-weight: 400; }
+.price-tier-badge { display: inline-block; background: #0d9488; color: white; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: .5px; margin-bottom: 2px; }
+.price-value.tier-active { color: #0d9488; }
+.ci-price-tier { font-size: 10px; color: var(--muted); text-decoration: line-through; display: block; }
 .price-offer-wrap { display: flex; flex-direction: column; gap: 1px; }
 .price-original-old { font-size: 12px; color: var(--muted); text-decoration: line-through; font-weight: 400; }
 .price-offer-badge { display: inline-block; background: #dc2626; color: white; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: .5px; margin-bottom: 2px; }
@@ -2250,6 +2255,9 @@ function updateUI() {
   // ── Barra dual bajo el header
   updateDualBar(netoParaDescuento, ahorro, hasDiscount);
 
+  // ── Actualizar precios en cards según tramo activo
+  updateCardPrices(tier);
+
   // ── Drawer footer
   document.getElementById('df-count').textContent = `${itemCount} unidad${itemCount!==1?'es':''}`;
   document.getElementById('df-neto').textContent  = fmt(netoBase);
@@ -2285,13 +2293,69 @@ function updateUI() {
     const thumb = item.img
       ? `<img class="ci-thumb" src="${item.img}" alt="${item.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="ci-thumb-emoji" style="display:none;">${item.emoji}</div>`
       : `<div class="ci-thumb-emoji">${item.emoji}</div>`;
-    return `<div class="cart-item">${thumb}<div class="ci-info"><div class="ci-name">${item.name}</div><div class="ci-sku">${id} · ${fmt(item.price)} c/u</div><div class="ci-price">${fmt(item.price*item.qty)}</div></div><div class="ci-controls"><button class="qty-btn remove" onclick="drawerChangeQty('${id}',-1)">−</button><div class="qty-display">${item.qty}</div><button class="qty-btn" onclick="drawerChangeQty('${id}',1)">+</button></div></div>`;
+    const discPct = (tier && !item.isOffer) ? tier.pct : 0;
+    const unitPrice = Math.round(item.price * (1 - discPct));
+    const lineTotal = unitPrice * item.qty;
+    const priceLabel = discPct
+      ? `<span class="ci-price-tier">${fmt(item.price)} c/u</span> ${fmt(unitPrice)} c/u`
+      : `${fmt(item.price)} c/u`;
+    return `<div class="cart-item">${thumb}
+      <div class="ci-info">
+        <div class="ci-name">${item.name}</div>
+        <div class="ci-sku">${id} · ${priceLabel}</div>
+        <div class="ci-price">${fmt(lineTotal)}</div>
+      </div>
+      <div class="ci-controls">
+        <button class="qty-btn remove" onclick="drawerChangeQty('${id}',-1)">−</button>
+        <div class="qty-display">${item.qty}</div>
+        <button class="qty-btn" onclick="drawerChangeQty('${id}',1)">+</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
 /* ═══════════════════════════════════════════
-   HELPER: Tramo de descuento activo
+   PRECIO CON DESCUENTO EN CARDS
    ═══════════════════════════════════════════ */
+function updateCardPrices(tier) {
+  document.querySelectorAll('.card').forEach(card => {
+    const isOffer = card.classList.contains('on-offer');
+    const basePrice = parseInt(card.dataset.price);
+    if (!basePrice) return;
+
+    // Limpiar TODOS los wraps previos y restaurar el precio original
+    const existingWrap = card.querySelector('.price-tier-wrap');
+    if (existingWrap) {
+      // Restaurar el div.price-value original
+      const restored = document.createElement('div');
+      restored.className = 'price-value';
+      restored.textContent = fmt(basePrice);
+      existingWrap.replaceWith(restored);
+    }
+
+    // Si hay tramo activo y el producto no es oferta, aplicar descuento
+    if (tier && !isOffer) {
+      const pval = card.querySelector('.card-footer .price-value');
+      if (!pval) return;
+      const discounted = Math.round(basePrice * (1 - tier.pct));
+      const wrap = document.createElement('div');
+      wrap.className = 'price-tier-wrap';
+      wrap.innerHTML = `
+        <span class="price-tier-original">${fmt(basePrice)}</span>
+        <div class="price-value tier-active">${fmt(discounted)}</div>`;
+      pval.replaceWith(wrap);
+    }
+  });
+}
+
+/* ─ Actualizar precio unitario mostrado en drawer ─ */
+function fmtCartItem(item, tier) {
+  if (tier && !item.isOffer) {
+    const disc = Math.round(item.price * (1 - tier.pct));
+    return `<span class="ci-price-tier">${fmt(item.price)} c/u</span>${fmt(disc)} c/u`;
+  }
+  return `${fmt(item.price)} c/u`;
+}
 function getActiveTier(netoBase) {
   // Devuelve el tier activo o null
   let active = null;
@@ -2711,7 +2775,17 @@ function openFormModal() {
 
   document.getElementById('modal-items-list').innerHTML = ids.map(id => {
     const item = cart[id];
-    return `<div class="ms-item"><span class="ms-name">${item.emoji} ${item.name}</span><span class="ms-qty">x${item.qty}</span><span class="ms-price">${fmt(item.price*item.qty)}</span></div>`;
+    const discPct = (hasDiscount && !item.isOffer) ? tier.pct : 0;
+    const unitDisc = Math.round(item.price * (1 - discPct));
+    const lineTotal = unitDisc * item.qty;
+    const priceLabel = discPct
+      ? `<span style="text-decoration:line-through;color:var(--muted);font-size:10px;">${fmt(item.price*item.qty)}</span> <strong style="color:#0d9488;">${fmt(lineTotal)}</strong>`
+      : `<span class="ms-price">${fmt(lineTotal)}</span>`;
+    return `<div class="ms-item">
+      <span class="ms-name">${item.emoji} ${item.name}</span>
+      <span class="ms-qty">x${item.qty}</span>
+      ${priceLabel}
+    </div>`;
   }).join('');
   document.getElementById('modal-neto-val').textContent = fmt(netoBase);
 
