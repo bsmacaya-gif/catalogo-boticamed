@@ -1464,7 +1464,7 @@ const DISCOUNT_TIERS = [
 // Mantener compatibilidad con código que use DISCOUNT_THRESHOLD/PCT
 const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[2].threshold; // umbral máximo (10%)
 const DISCOUNT_PCT       = DISCOUNT_TIERS[2].pct;
-const LEADS_ENDPOINT  = 'https://script.google.com/macros/s/AKfycbw8BQwWvFMNW8LFX5-VUI4wOsTFanELW9vnRg0z0lNjsU_vE9drFzFd_mD0B7yz53uV/exec';
+const LEADS_ENDPOINT  = 'https://script.google.com/macros/s/AKfycbzCDMEBDqjEOF34WOlCI9YAYeZCnOQykvItw6G3J06ocDuEBF0JGXLMjd5yt1mfDNP7/exec';
 const PRODUCTS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw8BQwWvFMNW8LFX5-VUI4wOsTFanELW9vnRg0z0lNjsU_vE9drFzFd_mD0B7yz53uV/exec';
 const LOGO_URL        = 'https://boticamed.b-cdn.net/wp-content/uploads/2023/03/Mesa-de-trabajo-2-100-1.jpg.webp';
 const ADMIN_PASSWORD  = '13287Boticamed%';           // ← Clave del panel de administración (cámbiala)
@@ -2531,50 +2531,44 @@ function verifyAdminPwd() {
 function openAdmin() {
   document.getElementById('admin-overlay').classList.add('open');
   const sheetBtn = document.getElementById('admin-sheets-btn');
-  // Derive spreadsheet URL from the CSV URL
-  sheetBtn.onclick = () => {
-    if (LEADS_CSV_URL) window.open(LEADS_CSV_URL.replace('/pub?', '/edit?').replace('&single=true&output=csv',''), '_blank');
-    else showToast('Configura LEADS_CSV_URL para abrir el Sheets');
-  };
-
-  if (!LEADS_CSV_URL) {
-    document.getElementById('adm-tbody').innerHTML = `<tr><td colspan="9" class="adm-empty">⚙️ Configura <strong>LEADS_CSV_URL</strong> en la sección de configuración para ver pedidos. Necesitas publicar la pestaña "Leads" como CSV aparte.</td></tr>`;
-    updateAdminStats([]);
-  } else {
-    loadAdminData();
-  }
+  sheetBtn.onclick = () => window.open('https://docs.google.com/spreadsheets', '_blank');
+  loadAdminData();
 }
 function closeAdmin() { document.getElementById('admin-overlay').classList.remove('open'); }
 function refreshAdminData() { loadAdminData(); }
 
 async function loadAdminData() {
-  document.getElementById('adm-tbody').innerHTML = `<tr><td colspan="9" class="adm-empty">⏳ Cargando pedidos desde Sheets…</td></tr>`;
+  document.getElementById('adm-tbody').innerHTML = `<tr><td colspan="9" class="adm-empty">⏳ Cargando pedidos…</td></tr>`;
   try {
-    const res = await fetch(LEADS_CSV_URL);
+    const res = await fetch(LEADS_ENDPOINT + '?action=leads');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const csv = await res.text();
-    const lines = csv.split('\n').map(l => l.trim()).filter(Boolean).slice(1); // skip header
+    const rows = await res.json();
 
-    adminData = lines.map(line => {
-      const c = parseCSVLine(line);
-      return {
-        fecha:       (c[0]  || '').trim(),
-        cotizacion:  (c[1]  || '').trim(),
-        razonSocial: (c[2]  || '').trim(),
-        rut:         (c[3]  || '').trim(),
-        giro:        (c[4]  || '').trim(),
-        email:       (c[5]  || '').trim(),
-        telefono:    (c[6]  || '').trim(),
-        total:       (c[13] || '').trim(), // Total c/IVA — col N
-        marketing:   (c[14] || '').trim(),
-        productos:   (c[15] || '').trim(),
-      };
-    }).filter(r => r.razonSocial);
+    if (!rows || rows.error) throw new Error(rows?.error || 'Sin datos');
+
+    // Skip header row
+    const data = rows.slice(1).filter(r => r[2]); // col C = Razón Social
+    adminData = data.map(c => ({
+      fecha:       String(c[0]  || '').trim(),
+      cotizacion:  String(c[1]  || '').trim(),
+      razonSocial: String(c[2]  || '').trim(),
+      rut:         String(c[3]  || '').trim(),
+      giro:        String(c[4]  || '').trim(),
+      email:       String(c[5]  || '').trim(),
+      telefono:    String(c[6]  || '').trim(),
+      dirFiscal:   String(c[7]  || '').trim(),
+      dirDespacho: String(c[8]  || '').trim(),
+      notas:       String(c[9]  || '').trim(),
+      marketing:   String(c[10] || '').trim(),
+      productos:   String(c[11] || '').trim(),
+      neto:        String(c[12] || '').trim(),
+      total:       String(c[13] || '').trim(),
+    }));
 
     populateAdminMonthFilter(adminData);
     filterAdminTable();
   } catch(err) {
-    document.getElementById('adm-tbody').innerHTML = `<tr><td colspan="9" class="adm-empty">⚠️ ${err.message}. Verifica que LEADS_CSV_URL apunta a la pestaña "Leads" publicada como CSV.</td></tr>`;
+    document.getElementById('adm-tbody').innerHTML = `<tr><td colspan="9" class="adm-empty">⚠️ ${err.message}. Verifica que el Apps Script tiene la función doGet con action=leads.</td></tr>`;
     updateAdminStats([]);
   }
 }
