@@ -225,7 +225,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .opb-label strong { color: var(--charcoal); }
 .opb-label.saving { color: #15803d; font-weight: 700; }
 .opb-label.saving-5  { color: #0891b2; font-weight: 700; }
-.opb-label.saving-7  { color: #0d9488; font-weight: 700; }
+/* .opb-label.saving-7 — eliminado */
 .opb-saving-badge { display: none; }
 .opb-track-wrap { position: relative; }
 .opb-track {
@@ -239,7 +239,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 }
 .opb-fill.phase-min   { background: linear-gradient(90deg, var(--blue-light), var(--blue)); }
 .opb-fill.phase-t1    { background: linear-gradient(90deg, var(--blue), #0891b2); }
-.opb-fill.phase-t2    { background: linear-gradient(90deg, #0891b2, #0d9488); }
+/* .opb-fill.phase-t2 — eliminado */
 .opb-fill.phase-t3    {
   background: #16a34a;
   box-shadow: 0 0 0 3px rgba(34,197,94,.25);
@@ -369,6 +369,17 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .btn-add.in-cart { background: var(--green-light); color: var(--green-hover); border: 1.5px solid rgba(0,158,94,.35); }
 .btn-add.in-cart:hover { background: #d1fae5; }
 
+
+/* ── BADGE REPOSICIÓN ── */
+.reposicion-badge {
+  position: absolute; bottom: 10px; left: 10px; z-index: 2;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  color: white; font-size: 8px; font-weight: 800;
+  letter-spacing: 1px; padding: 3px 9px; border-radius: 20px;
+  text-transform: uppercase; box-shadow: 0 2px 8px rgba(234,88,12,.4);
+  max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.grid.view-list .reposicion-badge { bottom: 8px; left: 8px; font-size: 7.5px; padding: 2px 7px; }
 /* ── PRECIO POR UNIDAD (PPU) — todas las vistas en una línea ── */
 .price-ppu-wrap { margin-top: 5px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px; }
 .price-presentacion-line1 { font-size: 10.5px; color: var(--mid); font-weight: 600; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
@@ -1062,16 +1073,16 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     <div class="opb-track-wrap">
       <div class="opb-track">
         <div class="opb-fill phase-min" id="opb-fill"></div>
-        <!-- 3 marcadores: mínimo, 5%, 7% — el 10% es el final de la pista -->
+        <!-- 2 marcadores: mínimo, 5% — el 10% es el final de la pista -->
         <div class="opb-milestone" id="opb-m0"><div class="opb-milestone-label">$200K</div></div>
         <div class="opb-milestone" id="opb-m1"><div class="opb-milestone-label">5% · $526K</div></div>
-        <div class="opb-milestone" id="opb-m2"><div class="opb-milestone-label">7% · $752K</div></div>
+        <div class="opb-milestone" id="opb-m2"><div class="opb-milestone-label">10% · $1.111K</div></div>
+
       </div>
     </div>
     <div class="opb-legend">
       <div class="opb-leg"><div class="opb-leg-dot" style="background:var(--blue)"></div>Mínimo $200K</div>
       <div class="opb-leg"><div class="opb-leg-dot" style="background:#0891b2"></div>5% desc. desde $526K</div>
-      <div class="opb-leg"><div class="opb-leg-dot" style="background:#0d9488"></div>7% desc. desde $752K</div>
       <div class="opb-leg"><div class="opb-leg-dot" style="background:#16a34a"></div>10% desc. desde $1.111K</div>
     </div>
   </div>
@@ -1552,16 +1563,14 @@ const MIN_ORDER       = 200000;                    // ← Pedido mínimo CLP (ne
 
 // ── DESCUENTO ESCALONADO POR VOLUMEN ─────────────────────────────────────
 // Tramo 1: 5% cuando el neto supere $526.316
-// Tramo 2: 7% cuando el neto supere $752.688
 // Tramo 3: 10% cuando el neto supere $1.111.112
 const DISCOUNT_TIERS = [
   { threshold: 526316,  pct: 0.05, label: '5%'  },
-  { threshold: 752688,  pct: 0.07, label: '7%'  },
   { threshold: 1111112, pct: 0.10, label: '10%' },
 ];
 // Mantener compatibilidad con código que use DISCOUNT_THRESHOLD/PCT
-const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[2].threshold; // umbral máximo (10%)
-const DISCOUNT_PCT       = DISCOUNT_TIERS[2].pct;
+const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[1].threshold; // umbral máximo (10%)
+const DISCOUNT_PCT       = DISCOUNT_TIERS[1].pct;
 const LEADS_ENDPOINT  = 'https://script.google.com/macros/s/AKfycbzCDMEBDqjEOF34WOlCI9YAYeZCnOQykvItw6G3J06ocDuEBF0JGXLMjd5yt1mfDNP7/exec';
 const PRODUCTS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw8BQwWvFMNW8LFX5-VUI4wOsTFanELW9vnRg0z0lNjsU_vE9drFzFd_mD0B7yz53uV/exec';
 const LOGO_URL        = 'https://boticamed.b-cdn.net/wp-content/uploads/2023/03/Mesa-de-trabajo-2-100-1.jpg.webp';
@@ -1702,6 +1711,7 @@ async function fetchFromSheets() {
         fichaUrl:     String(row[11]||'').trim(),
         unidades:     Number(String(row[12]||0).replace(/[^0-9]/g,''))||0,
         presentacion: String(row[13]||'').trim(),
+        reposicion:   String(row[14]||'').trim(),
       }));
       console.log('✅ Catálogo cargado vía: Apps Script');
       loadProducts(products);
@@ -1797,6 +1807,7 @@ function parseCSV(csv) {
       fichaUrl:     (cols[11] || '').trim(),
       unidades:     Number((cols[12] || '0').replace(/[^0-9]/g, '')) || 0,
       presentacion: (cols[13] || '').trim(), // ← Col N: Presentación (ej: "Caja × 50 unid.")
+      reposicion:   (cols[14] || '').trim(), // ← Col O: Reposición (ej: "Reposición Junio")
     });
   }
   return products;
@@ -2066,8 +2077,9 @@ function renderCard(p) {
     data-subcat="${p.subCategoria||''}" data-ficha="${p.fichaUrl||''}"
     data-variables="${(p.variables||[]).join('|')}"
     data-unidades="${p.unidades||0}"
-    data-presentacion="${p.presentacion||''}">
-    <div class="card-img-wrap">${imgHtml}<div class="card-sku-badge">${p.sku}</div></div>
+    data-presentacion="${p.presentacion||''}" 
+    data-reposicion="${p.reposicion||''}">
+    <div class="card-img-wrap">${imgHtml}<div class="card-sku-badge">${p.sku}</div>${p.reposicion ? `<div class="reposicion-badge">${p.reposicion}</div>` : ''}</div>
     <div class="card-body">
       <div class="card-name">${p.nombre}</div>
       <span class="card-sku-text">${p.sku}</span>
@@ -2638,14 +2650,6 @@ function updateDualBar(netoBase, ahorro, hasDiscount) {
     fill.className = 'opb-fill phase-t1';
     label.className = 'opb-label saving-5';
     label.innerHTML = '💙 Descuento <strong>' + tier.label + '</strong> activo · '
-      + '🎉 Estás ahorrando <strong>' + fmt(ahorro) + '</strong>'
-      + (nextTier ? ' · Faltan <strong>' + fmt(nextTier.threshold - netoBase) + '</strong> para ' + nextTier.label : '');
-
-  } else if (tier.pct === 0.07) {
-    bar.classList.add('phase-discount');
-    fill.className = 'opb-fill phase-t2';
-    label.className = 'opb-label saving-7';
-    label.innerHTML = '🌿 Descuento <strong>' + tier.label + '</strong> activo · '
       + '🎉 Estás ahorrando <strong>' + fmt(ahorro) + '</strong>'
       + (nextTier ? ' · Faltan <strong>' + fmt(nextTier.threshold - netoBase) + '</strong> para ' + nextTier.label : '');
 
