@@ -286,10 +286,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .hero { background: var(--blue-deep); margin-top: 96px; position: relative; overflow: hidden; }
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 65% 80% at 80% 50%, rgba(0,98,204,.3) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 5% 80%, rgba(0,158,94,.12) 0%, transparent 60%); }
 .hero::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 0); background-size: 24px 24px; }
-.hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 52px 40px 44px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
+.hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 40px 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
 .hero-logo { display: none; }
 .brand-tag { display: inline-block; background: rgba(0,158,94,.18); border: 1px solid rgba(0,158,94,.4); color: #6ee7b7; font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; }
-.hero h1 { font-family: 'DM Serif Display', serif; font-size: 44px; color: #fff; line-height: 1.08; letter-spacing: -.5px; }
+.hero h1 { font-family: 'DM Serif Display', serif; font-size: 32px; color: #fff; line-height: 1.08; letter-spacing: -.5px; }
 .hero h1 em { font-style: italic; color: rgba(255,255,255,.4); }
 .hero-sub { margin-top: 12px; font-size: 13px; color: rgba(255,255,255,.5); font-weight: 300; }
 .hero-right { text-align: right; flex-shrink: 0; }
@@ -356,6 +356,8 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .card-footer { padding-top: 14px; border-top: 1px solid var(--border); }
 .card-footer-row1 { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 12px; }
 .price-label { font-size: 9px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.price-value-row { display: flex; align-items: baseline; gap: 5px; }
+.price-iva-tag { font-size: 9.5px; font-weight: 500; color: var(--muted); opacity: .7; white-space: nowrap; }
 .price-value { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--blue-deep); letter-spacing: -.5px; }
 .qty-control { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; background: white; }
 .qc-btn { width: 32px; height: 32px; background: none; border: none; font-size: 16px; font-weight: 600; cursor: pointer; color: var(--charcoal); transition: background .15s; display: flex; align-items: center; justify-content: center; }
@@ -367,7 +369,13 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .btn-add.in-cart { background: var(--green-light); color: var(--green-hover); border: 1.5px solid rgba(0,158,94,.35); }
 .btn-add.in-cart:hover { background: #d1fae5; }
 
-/* ── PRECIO CON DESCUENTO POR VOLUMEN EN CARDS ── */
+/* ── PRECIO POR UNIDAD (PPU) — todas las vistas en una línea ── */
+.price-ppu-wrap { margin-top: 5px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px; }
+.price-presentacion-line1 { font-size: 10.5px; color: var(--mid); font-weight: 600; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.price-presentacion-line2::before { content: '– '; }
+.price-presentacion-line2 { font-size: 10px; color: var(--muted); white-space: nowrap; }
+.price-ppu { font-size: 10px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.price-ppu strong { color: var(--mid); font-weight: 700; }
 .price-tier-wrap { display: flex; flex-direction: column; gap: 1px; }
 .price-tier-original { font-size: 12px; color: var(--muted); text-decoration: line-through; font-weight: 400; }
 .price-tier-badge { display: inline-block; background: #0d9488; color: white; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: .5px; margin-bottom: 2px; }
@@ -415,7 +423,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 
 /* ── RESPONSIVE ── */
 @media (max-width: 700px) {
-  .hero-inner { flex-direction: column; align-items: flex-start; padding: 32px 20px 28px; }
+  .hero-inner { flex-direction: column; align-items: flex-start; padding: 28px 20px 20px; }
   .hero h1 { font-size: 32px; }
   .hero-right { display: none; }
   .main { padding: 28px 16px 80px; }
@@ -455,11 +463,39 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   #btn-send-order { padding: 7px 9px; font-size: 10.5px; }
 }
 
+/* Vista lista: PPU ya es inline en todas las vistas */
+/* Vista lista: altura fija uniforme para todas las cards */
+.grid.view-list .card {
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  overflow: hidden;
+}
+.grid.view-list .card-body { overflow: hidden; padding: 14px 16px; }
+.grid.view-list .card-img-wrap { height: 200px; min-width: 155px; width: 155px; flex-shrink: 0; }
+/* Pills compactas en una línea */
+.grid.view-list .size-pills { flex-wrap: nowrap; overflow: hidden; gap: 4px; }
+.grid.view-list .size-pill { padding: 3px 9px; font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+.grid.view-list .size-selector { margin-bottom: 4px; }
+.grid.view-list .size-selector-row { flex-wrap: nowrap; overflow: hidden; gap: 6px; }
+.grid.view-list .size-label { font-size: 9px; white-space: nowrap; }
+.grid.view-list .size-label-hint { display: none !important; }
+.grid.view-list .price-ppu-wrap { flex-wrap: nowrap; overflow: hidden; margin-top: 3px; }
+/* 2 columnas en desktop */
+@media (min-width: 701px) {
+  .grid.view-list { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+@media (max-width: 700px) {
+  .grid.view-list .card { height: 180px; min-height: 180px; max-height: 180px; }
+  .grid.view-list .card-img-wrap { height: 180px; min-width: 130px; width: 130px; }
+  .grid.view-list { grid-template-columns: 1fr; }
+}
 /* Vista lista: precio oferta en línea horizontal */
 .grid.view-list .price-offer-wrap { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 4px; }
 .grid.view-list .price-offer-badge { margin-bottom: 0; font-size: 8px; padding: 1px 5px; }
 .grid.view-list .price-original-old { font-size: 11px; }
 .grid.view-list .price-value.offer { font-size: 16px; width: 100%; }
+
 .footer-wa-btn {
   display: inline-flex; align-items: center; gap: 9px;
   background: var(--wa-green); color: white;
@@ -637,6 +673,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
   content: 'OFERTA'; position: absolute; top: 10px; right: 10px;
   background: #dc2626; color: white; font-size: 8px; font-weight: 800;
   letter-spacing: 1.5px; padding: 3px 10px; border-radius: 20px; z-index: 1;
+  animation: oferta-pulse 2s ease-in-out infinite;
+}
+@keyframes oferta-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,.5); }
+  50% { box-shadow: 0 0 0 6px rgba(220,38,38,.0); }
 }
 
 /* ── NOTAS INTERNAS ADMIN ── */
@@ -652,10 +693,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .adm-note-saved { font-size: 9px; color: #22c55e; opacity: 0; transition: opacity .3s; margin-top: 2px; }
 .adm-note-saved.show { opacity: 1; }
 
-/* ── SELECTOR DE TALLAS ── */
+/* ── SELECTOR DE VARIANTES (inline) ── */
 .size-selector { margin-bottom: 10px; }
-.size-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin-bottom: 6px; display: block; }
-.size-label span { color: var(--charcoal); font-weight: 700; }
+.size-selector-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.size-label { font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); white-space: nowrap; }
+.size-label-hint { font-size: 9px; color: var(--muted); display: block; margin-top: 3px; font-weight: 500; text-transform: none; letter-spacing: 0; }
 .size-pills { display: flex; flex-wrap: wrap; gap: 6px; }
 .size-pill {
   padding: 5px 12px; border: 1.5px solid var(--border); border-radius: 20px;
@@ -933,9 +975,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 }
 .csb-close:hover { background: rgba(255,255,255,.25); }
 
-.csb-body {
-  flex: 1; display: flex; overflow: hidden;
+.csb-search {
+  padding: 10px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
 }
+.csb-search input {
+  width: 100%; padding: 8px 12px; border: 1.5px solid var(--border);
+  border-radius: 20px; font-family: 'DM Sans', sans-serif; font-size: 12px;
+  background: var(--bg); outline: none; transition: border-color .2s;
+}
+.csb-search input:focus { border-color: var(--blue); background: white; }
 
 /* Columna izquierda — categorías */
 .csb-cats {
@@ -1053,7 +1101,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
       <span class="cbar-full">Hablar con vendedor</span>
     </button>
     <button id="btn-share-catalog" onclick="copyShareLink()" title="Copiar link del catálogo">
-      🔗 <span class="cbar-full">Copiar link</span>
+      🔗 <span class="cbar-full">Compartir</span>
     </button>
     <button id="btn-cart-toggle" onclick="toggleDrawer()">
       🛒 <span class="cbar-full">Ver carrito</span><span class="cbar-mini">Ver</span>
@@ -1093,6 +1141,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     </div>
     <div class="df-row iva"><span>IVA (19%)</span><span id="df-iva">$0</span></div>
     <div class="df-row total"><span>Total c/IVA</span><span id="df-total">$0</span></div>
+    <div id="df-savings-total" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:8px;text-align:center;">
+      <span style="font-size:12px;font-weight:700;color:#15803d;" id="df-savings-msg">🎉 Estás ahorrando $0</span>
+    </div>
     <div class="min-order-alert pending" id="min-alert">
       🛒 Pedido mínimo: <strong>$200.000</strong><br>
       <span id="min-falta">Te faltan $200.000 para completar el mínimo.</span>
@@ -1288,8 +1339,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 <div id="cat-sidebar-overlay" onclick="closeCatSidebar()"></div>
 <div id="cat-sidebar">
   <div class="csb-header">
-    <span class="csb-title">Todos los productos</span>
+    <span class="csb-title">Categorías</span>
     <button class="csb-close" onclick="closeCatSidebar()">✕</button>
+  </div>
+  <div class="csb-search">
+    <input type="search" id="csb-search-input" placeholder="🔍 Buscar categoría…"
+      oninput="filterSidebarCats(this.value)" autocomplete="off">
   </div>
   <div class="csb-body">
     <div class="csb-cats" id="csb-cats"></div>
@@ -1645,6 +1700,8 @@ async function fetchFromSheets() {
         novedad:      String(row[9]||'').toUpperCase()==='TRUE',
         precioOferta: Number(String(row[10]||0).replace(/[^0-9]/g,''))||0,
         fichaUrl:     String(row[11]||'').trim(),
+        unidades:     Number(String(row[12]||0).replace(/[^0-9]/g,''))||0,
+        presentacion: String(row[13]||'').trim(),
       }));
       console.log('✅ Catálogo cargado vía: Apps Script');
       loadProducts(products);
@@ -1738,6 +1795,8 @@ function parseCSV(csv) {
       novedad:      (cols[9] || '').toUpperCase() === 'TRUE',
       precioOferta,
       fichaUrl:     (cols[11] || '').trim(),
+      unidades:     Number((cols[12] || '0').replace(/[^0-9]/g, '')) || 0,
+      presentacion: (cols[13] || '').trim(), // ← Col N: Presentación (ej: "Caja × 50 unid.")
     });
   }
   return products;
@@ -1902,7 +1961,17 @@ function filterBySubcatAndClose(cat, subcat, btn) {
   }, 350);
 }
 
-/* ── Abrir / cerrar sidebar ── */
+function filterSidebarCats(query) {
+  const q = query.toLowerCase().trim();
+  document.querySelectorAll('.csb-cat-btn').forEach(btn => {
+    const cat = btn.dataset.cat || '';
+    const subs = (window._subcatMap || {})[cat] || [];
+    const match = !q || cat.toLowerCase().includes(q)
+                     || subs.some(s => s.toLowerCase().includes(q));
+    btn.style.display = match ? '' : 'none';
+  });
+}
+
 function openCatSidebar() {
   document.getElementById('cat-sidebar').classList.add('open');
   document.getElementById('cat-sidebar-overlay').classList.add('show');
@@ -1948,13 +2017,41 @@ function renderCard(p) {
   const pctDesc = tieneOferta ? Math.round((1 - p.precioOferta / p.precio) * 100) : 0;
   const precioActivo = tieneOferta ? p.precioOferta : p.precio;
 
+  // PPU — Precio por unidad + presentación en 2 líneas (si aplica)
+  const ppuHtml = (() => {
+    if (!p.unidades && !p.presentacion) return '';
+    let line1 = '', line2 = '';
+    if (p.presentacion) {
+      // Separar en 2 líneas por ' - ' o ' · ' o coma
+      const sep = p.presentacion.includes(' - ') ? ' - '
+                : p.presentacion.includes(' · ') ? ' · '
+                : p.presentacion.includes(',') ? ',' : null;
+      if (sep) {
+        const parts = p.presentacion.split(sep);
+        line1 = parts[0].trim();
+        line2 = parts.slice(1).join(sep).trim();
+      } else {
+        line1 = p.presentacion;
+      }
+    }
+    const ppuVal = p.unidades > 1
+      ? `<span class="price-ppu">Precio por unidad: <strong>${fmt(Math.round(precioActivo / p.unidades))}</strong></span>`
+      : '';
+    return `<div class="price-ppu-wrap">
+      ${line1 ? `<span class="price-presentacion-line1">📦 ${line1}</span>` : ''}
+      ${line2 ? `<span class="price-presentacion-line2">${line2}</span>` : ''}
+      ${ppuVal}
+    </div>`;
+  })();
+
+  const ivaTag = `<span class="price-iva-tag">+ IVA</span>`;
   const priceHtml = tieneOferta
     ? `<div class="price-offer-wrap">
         <span class="price-offer-badge">−${pctDesc}%</span>
         <span class="price-original-old">${fmt(p.precio)}</span>
-        <div class="price-value offer">${fmt(p.precioOferta)}</div>
+        <div class="price-value-row"><div class="price-value offer">${fmt(p.precioOferta)}</div>${ivaTag}</div>
        </div>`
-    : `<div class="price-value">${fmt(p.precio)}</div>`;
+    : `<div class="price-value-row"><div class="price-value">${fmt(p.precio)}</div>${ivaTag}</div>`;
 
   const fichaBtn = p.fichaUrl
     ? `<a class="btn-ficha" href="${p.fichaUrl}" target="_blank" download>
@@ -1967,7 +2064,9 @@ function renderCard(p) {
     data-id="${p.sku}" data-name="${p.nombre}" data-price="${precioActivo}"
     data-price-original="${p.precio}" data-emoji="${p.emoji}" data-img="${p.img}"
     data-subcat="${p.subCategoria||''}" data-ficha="${p.fichaUrl||''}"
-    data-variables="${(p.variables||[]).join('|')}">
+    data-variables="${(p.variables||[]).join('|')}"
+    data-unidades="${p.unidades||0}"
+    data-presentacion="${p.presentacion||''}">
     <div class="card-img-wrap">${imgHtml}<div class="card-sku-badge">${p.sku}</div></div>
     <div class="card-body">
       <div class="card-name">${p.nombre}</div>
@@ -1975,10 +2074,13 @@ function renderCard(p) {
       ${p.subCategoria ? `<span class="card-subcat">${p.subCategoria}</span>` : ''}
       ${(p.variables||[]).length ? `
       <div class="size-selector">
-        <span class="size-label">Talla: <span class="selected-size-label">— elige una —</span></span>
-        <div class="size-pills">
-          ${p.variables.map(v => `<button class="size-pill" onclick="selectSize(this,'${v}')">${v}</button>`).join('')}
+        <div class="size-selector-row">
+          <span class="size-label">Variante:</span>
+          <div class="size-pills">
+            ${p.variables.map(v => `<button class="size-pill" onclick="selectSize(this,'${v}')">${v}</button>`).join('')}
+          </div>
         </div>
+        <span class="selected-size-label size-label-hint" style="display:none;"></span>
       </div>` : ''}
       <div class="card-specs">${specs}</div>
       <div class="card-footer">
@@ -1986,6 +2088,7 @@ function renderCard(p) {
           <div>
             <div class="price-label">PV Mayoristas</div>
             ${priceHtml}
+            ${ppuHtml}
           </div>
           <div class="qty-control">
             <button class="qc-btn" onclick="changeQty(this,-1)">−</button>
@@ -2165,21 +2268,40 @@ function changeQty(btn, delta) {
   valEl.className = 'qc-val' + (v > 0 ? ' nonzero' : '');
   const card = getCard(btn);
   const id = card.dataset.id;
-  if (cart[id]) {
-    if (v === 0) removeFromCart(id, card);
-    else { cart[id].qty = v; updateUI(); saveCart(); }
+
+  // Determinar la clave correcta del carrito (con talla si aplica)
+  const selectedPill = card.querySelector('.size-pill.selected');
+  const size = selectedPill ? selectedPill.textContent.trim() : '';
+  const cartKey = size ? `${id}-${size}` : id;
+
+  if (cart[cartKey]) {
+    if (v === 0) removeFromCart(cartKey, card);
+    else { cart[cartKey].qty = v; updateUI(); saveCart(); }
   } else if (v === 1) {
-    // Auto-agregar cuando llega a 1 (útil en vista lista sin botón "Agregar")
+    // Auto-agregar al llegar a 1
     const addBtn = card.querySelector('.btn-add');
-    if (addBtn) addToCart(addBtn);
-    else {
-      // Vista lista: btn-add oculto — agregar directamente
-      const { name, price, emoji, img } = { name: card.dataset.name, price: parseInt(card.dataset.price), emoji: card.dataset.emoji, img: card.dataset.img||'' };
-      cart[id] = { name, price, qty: 1, emoji, img };
-      valEl.textContent = 1;
-      valEl.className = 'qc-val nonzero';
+    if (addBtn && addBtn.style.display !== 'none') {
+      addToCart(addBtn);
+    } else {
+      // Vista lista sin botón visible
+      if (card.dataset.variables && !size) {
+        // Tiene variantes pero no hay una seleccionada
+        valEl.textContent = 0; valEl.className = 'qc-val';
+        showToast('⚠️ Selecciona una variante antes de agregar');
+        return;
+      }
+      const { name, price, emoji, img } = {
+        name: card.dataset.name, price: parseInt(card.dataset.price),
+        emoji: card.dataset.emoji, img: card.dataset.img||''
+      };
+      const displayName = size ? `${name} (${size})` : name;
+      const unidades = parseInt(card.dataset.unidades)||0;
+      const presentacion = card.dataset.presentacion||'';
+      const isOffer = card.dataset.priceOriginal && parseInt(card.dataset.price) < parseInt(card.dataset.priceOriginal);
+      cart[cartKey] = { name: displayName, price, qty: 1, emoji, img, sku: id, size, isOffer: !!isOffer, unidades, presentacion };
+      valEl.textContent = 1; valEl.className = 'qc-val nonzero';
       updateUI(); saveCart();
-      showToast(`${emoji} ${name} agregado`);
+      showToast(`${emoji} ${displayName} agregado`);
     }
   }
 }
@@ -2210,12 +2332,14 @@ function addToCart(btn) {
   const cartKey = selectedSize ? `${id}-${selectedSize}` : id;
   const displayName = selectedSize ? `${name} (${selectedSize})` : name;
   const isOffer = card.dataset.priceOriginal && parseInt(card.dataset.price) < parseInt(card.dataset.priceOriginal);
+  const unidades = parseInt(card.dataset.unidades) || 0;
+  const presentacion = card.dataset.presentacion || '';
 
   const qtyEl = card.querySelector('.qc-val');
   let qty = parseInt(qtyEl.textContent) || 1;
   qtyEl.textContent = qty;
   qtyEl.className = 'qc-val nonzero';
-  cart[cartKey] = { name: displayName, price, qty, emoji, img, sku: id, size: selectedSize, isOffer: !!isOffer };
+  cart[cartKey] = { name: displayName, price, qty, emoji, img, sku: id, size: selectedSize, isOffer: !!isOffer, unidades, presentacion };
   btn.classList.add('in-cart');
   btn.innerHTML = selectedSize ? `<span>✓</span> ${selectedSize} en carrito` : '<span>✓</span> En carrito';
   updateUI();
@@ -2238,7 +2362,22 @@ function removeFromCart(id, card) {
 }
 
 function clearCart() {
-  Object.keys(cart).forEach(id => removeFromCart(id, document.querySelector(`.card[data-id="${id}"]`)));
+  // Limpiar el objeto carrito
+  const keys = Object.keys(cart);
+  keys.forEach(cartKey => {
+    const item = cart[cartKey];
+    const sku = item.sku || cartKey.split('-')[0];
+    // Buscar la card por SKU (data-id)
+    const card = document.querySelector(`.card[data-id="${sku}"]`);
+    if (card) {
+      const btn = card.querySelector('.btn-add');
+      if (btn) { btn.classList.remove('in-cart'); btn.innerHTML = '<span>🛒</span> Agregar al carrito'; }
+      const qtyEl = card.querySelector('.qc-val');
+      if (qtyEl) { qtyEl.textContent = '0'; qtyEl.className = 'qc-val'; }
+    }
+    delete cart[cartKey];
+  });
+  updateUI();
   saveCart();
 }
 
@@ -2274,6 +2413,9 @@ function updateUI() {
     msgEl.className = 'progress-message';
     sendBtn.classList.remove('ready');
     drawerSend.classList.remove('ready');
+    minAlert.style.display = 'block';
+    minAlert.className = 'min-order-alert pending';
+    minAlert.innerHTML = `🛒 Pedido mínimo (neto): <strong>$200.000</strong><br>Te faltan <strong>${fmt(MIN_ORDER)}</strong> para completar el mínimo.`;
   } else if (netoBase >= MIN_ORDER) {
     msgEl.textContent = hasDiscount
       ? `✓ ¡${tier.label} activo! Ahorrando ${fmt(ahorro)}`
@@ -2282,15 +2424,15 @@ function updateUI() {
     sendBtn.classList.add('ready');
     drawerSend.classList.add('ready');
     minAlert.className = 'min-order-alert reached';
-    minAlert.innerHTML = hasDiscount
-      ? `🎉 ¡Descuento ${tier.label} activo! Estás ahorrando <strong>${fmt(ahorro)}</strong>.`
-      : '✅ ¡Pedido mínimo alcanzado! Puedes confirmar tu orden.';
+    minAlert.style.display = hasDiscount ? 'none' : 'block';
+    minAlert.innerHTML = '✅ ¡Pedido mínimo alcanzado! Puedes confirmar tu orden.';
   } else {
     const falta = MIN_ORDER - netoBase;
     msgEl.textContent = `Te faltan ${fmt(falta)} neto para el mínimo`;
     msgEl.className = 'progress-message close';
     sendBtn.classList.remove('ready');
     drawerSend.classList.remove('ready');
+    minAlert.style.display = 'block';
     minAlert.className = 'min-order-alert pending';
     minAlert.innerHTML = `🛒 Pedido mínimo (neto): <strong>$200.000</strong><br>Te faltan <strong>${fmt(falta)}</strong> para completar el mínimo.`;
   }
@@ -2324,6 +2466,21 @@ function updateUI() {
   }
   document.getElementById('df-iva').textContent   = fmt(iva);
   document.getElementById('df-total').textContent = fmt(bruto);
+
+  // ── Ahorro total prominente
+  const savingsEl = document.getElementById('df-savings-total');
+  const savingsMsg = document.getElementById('df-savings-msg');
+  const totalSaved = ahorro + ids.reduce((s,id) => {
+    const item = cart[id];
+    const orig = parseInt(document.querySelector(`.card[data-id="${item.sku||id}"]`)?.dataset?.priceOriginal || item.price);
+    return s + (orig > item.price ? (orig - item.price) * item.qty : 0);
+  }, 0);
+  if (savingsEl && totalSaved > 0) {
+    savingsEl.style.display = 'block';
+    savingsMsg.textContent = `🎉 Estás ahorrando ${fmt(totalSaved)} en esta compra`;
+  } else if (savingsEl) {
+    savingsEl.style.display = 'none';
+  }
 
   // ── Drawer items list
   const drawerEl = document.getElementById('drawer-items');
@@ -2371,22 +2528,38 @@ function updateCardPrices(tier) {
     if (existingWrap) {
       // Restaurar el div.price-value original
       const restored = document.createElement('div');
-      restored.className = 'price-value';
-      restored.textContent = fmt(basePrice);
+      restored.className = 'price-value-row';
+      restored.innerHTML = `<div class="price-value">${fmt(basePrice)}</div><span class="price-iva-tag">+ IVA</span>`;
       existingWrap.replaceWith(restored);
+
+      // Restaurar PPU al precio original
+      const unidades = parseInt(card.dataset.unidades) || 0;
+      const ppuEl = card.querySelector('.price-ppu strong');
+      if (ppuEl && unidades > 1) {
+        ppuEl.textContent = fmt(Math.round(basePrice / unidades));
+      }
     }
 
     // Si hay tramo activo y el producto no es oferta, aplicar descuento
     if (tier && !isOffer) {
-      const pval = card.querySelector('.card-footer .price-value');
-      if (!pval) return;
+      // Reemplazar el price-value-row completo para no dejar + IVA flotando
+      const priceRow = card.querySelector('.card-footer .price-value-row')
+                    || card.querySelector('.card-footer .price-value');
+      if (!priceRow) return;
       const discounted = Math.round(basePrice * (1 - tier.pct));
       const wrap = document.createElement('div');
       wrap.className = 'price-tier-wrap';
       wrap.innerHTML = `
         <span class="price-tier-original">${fmt(basePrice)}</span>
-        <div class="price-value tier-active">${fmt(discounted)}</div>`;
-      pval.replaceWith(wrap);
+        <div class="price-value-row"><div class="price-value tier-active">${fmt(discounted)}</div><span class="price-iva-tag">+ IVA</span></div>`;
+      priceRow.replaceWith(wrap);
+
+      // Actualizar PPU dinámicamente con el precio descontado
+      const unidades = parseInt(card.dataset.unidades) || 0;
+      const ppuEl = card.querySelector('.price-ppu strong');
+      if (ppuEl && unidades > 1) {
+        ppuEl.textContent = fmt(Math.round(discounted / unidades));
+      }
     }
   });
 }
@@ -2957,7 +3130,12 @@ async function submitOrder() {
   const iva         = Math.round(neto * 0.19);
   const bruto       = neto + iva;
   const now         = new Date();
-  quoteNumber = `BOT-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(Date.now()).slice(-4)}`;
+  // Número de orden secuencial desde 2134
+const _baseOrder = 2134;
+const _storedN = parseInt(localStorage.getItem('bm_order_seq') || String(_baseOrder - 1));
+const _nextN = _storedN + 1;
+try { localStorage.setItem('bm_order_seq', String(_nextN)); } catch(e) {}
+quoteNumber = 'BOT-' + String(_nextN);
 
   orderData = {
     razonSocial:  document.getElementById('f-razon').value.trim(),
@@ -3195,27 +3373,21 @@ function setupScrollSpy() {
    ═══════════════════════════════════════════ */
 function selectSize(pill, size) {
   const card = getCard(pill);
-  // Deseleccionar otras pills de esta card
   card.querySelectorAll('.size-pill').forEach(p => p.classList.remove('selected'));
   pill.classList.add('selected');
-  // Actualizar label
-  const lbl = card.querySelector('.selected-size-label');
-  if (lbl) lbl.textContent = size;
-
-  // Actualizar el botón y qty según si ESTA talla ya está en el carrito
+  // Actualizar hint
+  const hint = card.querySelector('.size-label-hint');
+  if (hint) { hint.textContent = `Seleccionado: ${size}`; hint.style.display = 'block'; }
   const id = card.dataset.id;
   const cartKey = `${id}-${size}`;
   const btn = card.querySelector('.btn-add');
   const qtyEl = card.querySelector('.qc-val');
-
   if (cart[cartKey]) {
-    // Esta talla ya está en el carrito — mostrar cantidad actual
     btn.classList.add('in-cart');
     btn.innerHTML = `<span>✓</span> ${size} en carrito`;
     qtyEl.textContent = cart[cartKey].qty;
     qtyEl.className = 'qc-val nonzero';
   } else {
-    // Esta talla NO está en el carrito — resetear botón y qty
     btn.classList.remove('in-cart');
     btn.innerHTML = '<span>🛒</span> Agregar al carrito';
     qtyEl.textContent = '0';
@@ -3253,16 +3425,25 @@ const slugify = str => str.toLowerCase().replace(/[áàä]/g,'a').replace(/[éè
 /* ── COPIAR LINK DEL CATÁLOGO ── */
 function copyShareLink() {
   const btn = document.getElementById('btn-share-catalog');
-  const url = window.location.href.split('?')[0]; // URL limpia sin parámetros
+  const url = window.location.href.split('?')[0];
+  // Usar API nativa de compartir si está disponible (iOS/Android)
+  if (navigator.share) {
+    navigator.share({
+      title: 'Catálogo Mayorista Boticamed',
+      text: '🏥 Revisa nuestro catálogo mayorista de artículos médicos con precios netos y descuentos por volumen.',
+      url: url,
+    }).catch(() => {}); // usuario canceló — no hacer nada
+    return;
+  }
+  // Fallback: copiar al portapapeles
   navigator.clipboard.writeText(url).then(() => {
     btn.classList.add('copied');
     btn.innerHTML = '✓ <span class="cbar-full">¡Copiado!</span>';
     setTimeout(() => {
       btn.classList.remove('copied');
-      btn.innerHTML = '🔗 <span class="cbar-full">Copiar link</span>';
+      btn.innerHTML = '🔗 <span class="cbar-full">Compartir</span>';
     }, 2200);
   }).catch(() => {
-    // Fallback para navegadores sin clipboard API
     const ta = document.createElement('textarea');
     ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
