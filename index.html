@@ -1629,7 +1629,7 @@ let adminStatuses = {};
 document.addEventListener('DOMContentLoaded', () => {
   loadAdminStatuses();
   initView();
-  updateDualBar(0, 0, false); // ← posicionar marcadores de la barra al cargar
+  if (DISCOUNT_TIERS.length) updateDualBar(0, 0, false); // ← posicionar marcadores de la barra al cargar
   // Keyboard shortcut Ctrl+Shift+A → admin panel
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdminAuth(); }
@@ -2443,7 +2443,7 @@ function updateUI() {
   }
 
   // ── Barra dual bajo el header
-  updateDualBar(netoParaDescuento, ahorro, hasDiscount);
+  if (DISCOUNT_TIERS.length) updateDualBar(netoParaDescuento, ahorro, hasDiscount);
 
   // ── Actualizar precios en cards según tramo activo
   updateCardPrices(tier);
