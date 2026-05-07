@@ -1064,7 +1064,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 <div class="confetti-container" id="confetti-container"></div>
 
 <!-- ══ BARRA ESCALONADA: MÍNIMO + 3 TRAMOS ══ -->
-<div id="order-progress-bar">
+<div id="order-progress-bar" style="display:none!important;">
   <div class="opb-inner">
     <div class="opb-top">
       <div class="opb-label" id="opb-label">Agrega productos — Mínimo <strong>$200.000</strong> neto</div>
@@ -1564,13 +1564,9 @@ const MIN_ORDER       = 200000;                    // ← Pedido mínimo CLP (ne
 // ── DESCUENTO ESCALONADO POR VOLUMEN ─────────────────────────────────────
 // Tramo 1: 5% cuando el neto supere $526.316
 // Tramo 3: 10% cuando el neto supere $1.111.112
-const DISCOUNT_TIERS = [
-  { threshold: 526316,  pct: 0.05, label: '5%'  },
-  { threshold: 1111112, pct: 0.10, label: '10%' },
-];
-// Mantener compatibilidad con código que use DISCOUNT_THRESHOLD/PCT
-const DISCOUNT_THRESHOLD = DISCOUNT_TIERS[1].threshold; // umbral máximo (10%)
-const DISCOUNT_PCT       = DISCOUNT_TIERS[1].pct;
+const DISCOUNT_TIERS = []; // Sin descuentos por tramo activos
+const DISCOUNT_THRESHOLD = 0;
+const DISCOUNT_PCT       = 0;
 const LEADS_ENDPOINT  = 'https://script.google.com/macros/s/AKfycbzCDMEBDqjEOF34WOlCI9YAYeZCnOQykvItw6G3J06ocDuEBF0JGXLMjd5yt1mfDNP7/exec';
 const PRODUCTS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbw8BQwWvFMNW8LFX5-VUI4wOsTFanELW9vnRg0z0lNjsU_vE9drFzFd_mD0B7yz53uV/exec';
 const LOGO_URL        = 'https://boticamed.b-cdn.net/wp-content/uploads/2023/03/Mesa-de-trabajo-2-100-1.jpg.webp';
