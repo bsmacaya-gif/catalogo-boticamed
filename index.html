@@ -57,7 +57,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 .sk-btn { height: 38px; margin-top: 12px; border-radius: 9px; }
 
 /* ── CONFIG BANNER ── */
-#config-banner { display: none; background: #fffbeb; border-bottom: 2px solid #f59e0b; padding: 12px 40px; font-size: 13px; color: #7a4f00; text-align: center; margin-top: 96px; z-index: 999; }
+#config-banner { display: none; background: #fffbeb; border-bottom: 2px solid #f59e0b; padding: 12px 40px; font-size: 13px; color: #7a4f00; text-align: center; margin-top: 60px; z-index: 999; }
 #config-banner.show { display: block; }
 #config-banner code { background: rgba(0,0,0,.07); padding: 2px 6px; border-radius: 4px; font-size: 12px; font-family: monospace; }
 
@@ -211,7 +211,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 /* ══════════════════════════════════════════════════════════
    BARRA ESCALONADA: MÍNIMO + 3 TRAMOS DE DESCUENTO
    ══════════════════════════════════════════════════════════ */
-#order-progress-bar {
+#order-progress-bar { display: none !important; }
   position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
   background: white; border-bottom: 1px solid var(--border);
   padding: 7px 32px 9px;
@@ -283,7 +283,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 /* ══════════════════════════════════════════════════════════
    HERO
    ══════════════════════════════════════════════════════════ */
-.hero { background: var(--blue-deep); margin-top: 96px; position: relative; overflow: hidden; }
+.hero { background: var(--blue-deep); margin-top: 60px; position: relative; overflow: hidden; }
 .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 65% 80% at 80% 50%, rgba(0,98,204,.3) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 5% 80%, rgba(0,158,94,.12) 0%, transparent 60%); }
 .hero::after { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 0); background-size: 24px 24px; }
 .hero-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 40px 28px; display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
@@ -299,7 +299,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
 /* ══════════════════════════════════════════════════════════
    CAT NAV + SEARCH
    ══════════════════════════════════════════════════════════ */
-.cat-nav { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 96px; z-index: 100; box-shadow: 0 1px 12px rgba(0,44,107,.08); }
+.cat-nav { background: white; border-bottom: 1px solid var(--border); position: sticky; top: 60px; z-index: 100; box-shadow: 0 1px 12px rgba(0,44,107,.08); }
 .cat-nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .cat-tabs { display: flex; overflow-x: auto; scrollbar-width: none; flex: 1; }
 .cat-tabs::-webkit-scrollbar { display: none; }
@@ -1152,9 +1152,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--c
     </div>
     <div class="df-row iva"><span>IVA (19%)</span><span id="df-iva">$0</span></div>
     <div class="df-row total"><span>Total c/IVA</span><span id="df-total">$0</span></div>
-    <div id="df-savings-total" style="display:none;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:10px;padding:10px 14px;margin-top:8px;text-align:center;">
-      <span style="font-size:12px;font-weight:700;color:#15803d;" id="df-savings-msg">🎉 Estás ahorrando $0</span>
-    </div>
     <div class="min-order-alert pending" id="min-alert">
       🛒 Pedido mínimo: <strong>$200.000</strong><br>
       <span id="min-falta">Te faltan $200.000 para completar el mínimo.</span>
@@ -2604,10 +2601,18 @@ function updateDualBar(netoBase, ahorro, hasDiscount) {
   const fill  = document.getElementById('opb-fill');
   const label = document.getElementById('opb-label');
   const badge = document.getElementById('opb-badge');
+
+  // Sin tramos — solo mostrar progreso hacia el mínimo
+  if (!DISCOUNT_TIERS.length) {
+    if (fill) fill.style.width = Math.min((netoBase / MIN_ORDER) * 100, 100).toFixed(2) + '%';
+    return;
+  }
+
   const maxT  = DISCOUNT_TIERS[DISCOUNT_TIERS.length - 1].threshold;
 
   // Posicionar marcadores
-  [MIN_ORDER, DISCOUNT_TIERS[0].threshold, DISCOUNT_TIERS[1].threshold].forEach((val, i) => {
+  const milestones = [MIN_ORDER, ...(DISCOUNT_TIERS[0] ? [DISCOUNT_TIERS[0].threshold] : []), ...(DISCOUNT_TIERS[1] ? [DISCOUNT_TIERS[1].threshold] : [])];
+  milestones.forEach((val, i) => {
     const el = document.getElementById('opb-m' + i);
     if (el) el.style.left = Math.min((val / maxT) * 100, 99).toFixed(2) + '%';
   });
@@ -2631,7 +2636,7 @@ function updateDualBar(netoBase, ahorro, hasDiscount) {
     fill.className = 'opb-fill phase-min';
     label.className = 'opb-label';
     label.innerHTML = 'Te faltan <strong>' + fmt(MIN_ORDER - netoBase) + '</strong> para el mínimo · '
-      + fmt(DISCOUNT_TIERS[0].threshold - netoBase) + ' para el primer descuento 5%';
+      + (DISCOUNT_TIERS[0] ? fmt(DISCOUNT_TIERS[0].threshold - netoBase) + ' para el primer descuento ' + DISCOUNT_TIERS[0].label : fmt(MIN_ORDER - netoBase) + ' para el mínimo');
 
   } else if (!tier) {
     bar.classList.remove('phase-discount');
